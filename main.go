@@ -94,15 +94,31 @@ func processHelper(name string, o interface{}, un *unstructured.Unstructured, pa
 			lines = append(lines, linesHelper...)
 			imports = append(imports, importsHelper...)
 		}
+		lines = append(lines, "},")
 	case reflect.String:
 		lines = append(lines, fmt.Sprintf("%v: %q,", name, ve.Interface()))
+	case reflect.Map:
+		//TODO:
+		//lines = append(lines, fmt.Sprintf("%v: %q{},", name, ve.Interface()))
+	case reflect.Slice:
+		lines = append(lines, fmt.Sprintf("%v: {", name))
+		for i := 0; i < ve.Len(); i++ {
+			index := ve.Index(i)
+			if !index.CanInterface() {
+				continue
+			}
+			importsHelper, linesHelper := processHelper(name, index.Interface(), un, path)
+			lines = append(lines, linesHelper...)
+			imports = append(imports, importsHelper...)
+		}
+		lines = append(lines, "},")
+	case reflect.Ptr:
+		//TODO:
+		//lines = append(lines, fmt.Sprintf("%v: ptr,", name))
 	default:
 		lines = append(lines, fmt.Sprintf("%v: %v,", name, ve.Interface()))
 	}
 
-	if ve.Kind() == reflect.Struct {
-		lines = append(lines, "},")
-	}
 	return
 }
 
@@ -208,7 +224,7 @@ func printLines(lines []string, buf *bytes.Buffer) {
 
 func main() {
 	// TODO allow multiple raw manifests as well as helm charts
-	data, err := os.ReadFile("./examples/ns.yaml")
+	data, err := os.ReadFile("./examples/pv.yaml")
 	if err != nil {
 		panic(err)
 	}
@@ -223,6 +239,7 @@ func main() {
 	printLines(lines, &buf)
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
+		fmt.Printf("failed to format: %v\n%v\n", err, string(buf.Bytes()))
 		panic(err)
 	}
 	fmt.Printf("%v", string(formatted))

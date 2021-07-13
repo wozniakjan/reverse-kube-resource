@@ -33,6 +33,8 @@ type object struct {
 
 type goObject struct {
 	lines []string
+	name  string
+	kind  string
 }
 
 type imp struct {
@@ -197,12 +199,13 @@ func processHelper(pc processContext) {
 		last.lines = append(last.lines, "},")
 	case reflect.String:
 		varName := fmt.Sprintf("%q", ve.Interface())
+		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		if ptrDeref != "" {
 			varName = fmt.Sprintf("%v%v", pc.un.GetName(), te.Name())
-			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}}
+			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
 			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
 		}
-		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
+		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	case reflect.Map:
 		valElem := te.Elem()
@@ -246,26 +249,28 @@ func processHelper(pc processContext) {
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, "},")
 	default:
-		rval := ve.Interface()
+		varName := ve.Interface()
+		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		if ptrDeref != "" {
-			ptrObj := goObject{}
+			varName = fmt.Sprintf("%v%v", pc.un.GetName(), te.Name())
+			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
 			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
 		}
-		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, rval))
+		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
+		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	}
 
 	return
 }
 
-func process(o interface{}, un *unstructured.Unstructured, path []string) (imports []imp, goObjects []goObject) {
+func process(o interface{}, un *unstructured.Unstructured) (imports []imp, goObjects []goObject) {
 	ve := reflect.ValueOf(o).Elem()
 	te := reflect.TypeOf(o).Elem()
 	ni := nameImport(te.PkgPath())
 
 	varName := fmt.Sprintf("%v%v", un.GetName(), te.Name())
 	imports = append(imports, imp{name: ni, path: te.PkgPath()})
-	goObjects = []goObject{goObject{}}
+	goObjects = []goObject{goObject{name: un.GetName(), kind: te.Name()}}
 	imports = []imp{}
 	last := &goObjects[len(goObjects)-1]
 	last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
@@ -322,7 +327,7 @@ func getTag(f reflect.StructField) string {
 func processObjects(obj []object) (allImports []imp, allGoObjects []goObject) {
 	_ = v1.Namespace{}
 	for _, o := range obj {
-		imports, goObjects := process(o.rt, o.un, []string{})
+		imports, goObjects := process(o.rt, o.un)
 		allImports = append(allImports, imports...)
 		allGoObjects = append(allGoObjects, goObjects...)
 	}
@@ -369,12 +374,22 @@ func printLines(goObjects []goObject, buf *bytes.Buffer) {
 	} else {
 		fmt.Fprintln(buf, "var (")
 	}
+	lastName := ""
 	for _, o := range goObjects {
-		if len(o.lines) > 1 {
-			fmt.Fprintln(buf, "")
+		if lastName != o.name {
+			fmt.Fprintf(buf, "// %v %q\n", o.kind, o.name)
+			lastName = o.name
+		} else {
+			if len(o.lines) > 1 {
+				fmt.Fprintln(buf, "")
+				fmt.Fprintln(buf, "")
+			}
 		}
 		for _, l := range o.lines {
 			fmt.Fprintln(buf, l)
+		}
+		if len(o.lines) > 1 {
+			fmt.Fprintln(buf, "")
 		}
 	}
 	if len(goObjects) != 1 {
@@ -382,17 +397,28 @@ func printLines(goObjects []goObject, buf *bytes.Buffer) {
 	}
 }
 
-func main() {
-	// TODO allow multiple raw manifests as well as helm charts
-	data, err := os.ReadFile("./examples/pv.yaml")
+func read() [][]byte {
+	data, err := os.ReadFile("./examples/ns_and_pv.yaml")
 	if err != nil {
 		panic(err)
 	}
+	split := strings.Split(string(data), "---")
+	all := make([][]byte, len(split))
+	for i, _ := range split {
+		all[i] = []byte(split[i])
+	}
+	return all
+}
 
-	objs := []object{{
-		rt: getRuntimeObject(data),
-		un: getUnstructuredObject(data),
-	}}
+func main() {
+	d := read()
+	objs := []object{}
+	for _, data := range d {
+		objs = append(objs, object{
+			rt: getRuntimeObject(data),
+			un: getUnstructuredObject(data),
+		})
+	}
 	imports, goObjects := processObjects(objs)
 	var buf bytes.Buffer
 	printImports(imports, &buf)

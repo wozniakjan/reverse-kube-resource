@@ -107,8 +107,6 @@ func processMapKey(pc processContext) {
 	if ni != "" {
 		(*pc.imports) = append((*pc.imports), imp{name: ni, path: te.PkgPath()})
 	}
-	/*if ve.Kind() == reflect.Ptr {
-	}*/
 	last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 	if ve.Kind() == reflect.String {
 		last.lines = append(last.lines, fmt.Sprintf("%v%q", ptrDeref, ve.Interface()))
@@ -401,7 +399,6 @@ func main() {
 	printLines(goObjects, &buf)
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
-		fmt.Printf("failed to format: %v\n%v\n", err, string(buf.Bytes()))
 		panic(err)
 	}
 	fmt.Printf("%v", string(formatted))

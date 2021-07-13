@@ -15,6 +15,7 @@ import (
 
 	"golang.org/x/tools/go/ast/astutil"
 	v1 "k8s.io/api/core/v1"
+	apiresource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -109,7 +110,11 @@ func processMapKey(pc processContext) {
 	/*if ve.Kind() == reflect.Ptr {
 	}*/
 	last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-	last.lines = append(last.lines, fmt.Sprintf("%v", "key"))
+	if ve.Kind() == reflect.String {
+		last.lines = append(last.lines, fmt.Sprintf("%v%q", ptrDeref, ve.Interface()))
+	} else {
+		last.lines = append(last.lines, fmt.Sprintf("%v%v", ptrDeref, ve.Interface()))
+	}
 	return
 }
 
@@ -130,7 +135,20 @@ func processMapValue(pc processContext) {
 		(*pc.imports) = append((*pc.imports), imp{name: ni, path: te.PkgPath()})
 	}
 	last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-	last.lines = append(last.lines, fmt.Sprintf("%v", "val"))
+	if ve.Kind() == reflect.String {
+		last.lines = append(last.lines, fmt.Sprintf("%v%q", ptrDeref, ve.Interface()))
+	} else {
+		if ve.CanInterface() {
+			ifc := ve.Interface()
+			if q, ok := ifc.(apiresource.Quantity); ok {
+				last.lines = append(last.lines, fmt.Sprintf("apiresource.MustParse(%q)", q.String()))
+			} else {
+				last.lines = append(last.lines, fmt.Sprintf("%v%v", ptrDeref, ve.Interface()))
+			}
+		} else {
+			last.lines = append(last.lines, fmt.Sprintf("%v%v", ptrDeref, ve.Interface()))
+		}
+	}
 	return
 }
 
@@ -157,10 +175,15 @@ func processHelper(pc processContext) {
 		ltype = fmt.Sprintf("%v: ", pc.name)
 	}
 
+	teType := te.Name()
+	if ni != "" {
+		teType = fmt.Sprintf("%v.%v", ni, teType)
+	}
+
 	switch kind := ve.Kind(); kind {
 	case reflect.Struct:
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-		last.lines = append(last.lines, fmt.Sprintf("%v%v%v.%v{", ltype, ptrDeref, ni, te.Name()))
+		last.lines = append(last.lines, fmt.Sprintf("%v%v%v{", ltype, ptrDeref, teType))
 		for i := 0; i < ve.NumField(); i++ {
 			f := ve.Field(i)
 			if !f.CanInterface() {
@@ -175,8 +198,14 @@ func processHelper(pc processContext) {
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, "},")
 	case reflect.String:
+		varName := fmt.Sprintf("%q", ve.Interface())
+		if ptrDeref != "" {
+			varName = fmt.Sprintf("%v%v", pc.un.GetName(), te.Name())
+			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}}
+			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
+		}
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-		last.lines = append(last.lines, fmt.Sprintf("%v%q,", ltype, ve.Interface()))
+		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	case reflect.Map:
 		valElem := te.Elem()
 		valNi := ""
@@ -192,7 +221,6 @@ func processHelper(pc processContext) {
 		last.lines = append(last.lines, fmt.Sprintf("%v: map[%v%v]%v%v{", pc.name, keyNi, keyElem.Name(), valNi, valElem.Name()))
 		for _, key := range ve.MapKeys() {
 			last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-			last.lines = append(last.lines, "{")
 			val := ve.MapIndex(key)
 			pcKey := pc.new("", pc.name, key.Interface(), te.Kind())
 			last = &(*pc.goObjects)[len((*pc.goObjects))-1]
@@ -201,7 +229,6 @@ func processHelper(pc processContext) {
 			pcVal := pc.new("", pc.name, val.Interface(), te.Kind())
 			processMapValue(pcVal)
 			last.lines[len(last.lines)-1] = last.lines[len(last.lines)-1] + ","
-			last.lines = append(last.lines, "},")
 		}
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, "},")
@@ -221,8 +248,13 @@ func processHelper(pc processContext) {
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, "},")
 	default:
+		rval := ve.Interface()
+		if ptrDeref != "" {
+			ptrObj := goObject{}
+			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
+		}
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
-		last.lines = append(last.lines, fmt.Sprintf("%v%v,", ltype, ve.Interface()))
+		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, rval))
 	}
 
 	return
@@ -238,7 +270,7 @@ func process(o interface{}, un *unstructured.Unstructured, path []string) (impor
 	goObjects = []goObject{goObject{}}
 	imports = []imp{}
 	last := &goObjects[len(goObjects)-1]
-	last.lines = append(last.lines, fmt.Sprintf("var %v = %v.%v{", varName, ni, te.Name()))
+	last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
 	for i := 0; i < ve.NumField(); i++ {
 		f := ve.Field(i)
 		if !f.CanInterface() {
@@ -334,10 +366,21 @@ func getUnstructuredObject(data []byte) *unstructured.Unstructured {
 }
 
 func printLines(goObjects []goObject, buf *bytes.Buffer) {
+	if len(goObjects) == 1 {
+		fmt.Fprintf(buf, "var ")
+	} else {
+		fmt.Fprintln(buf, "var (")
+	}
 	for _, o := range goObjects {
+		if len(o.lines) > 1 {
+			fmt.Fprintln(buf, "")
+		}
 		for _, l := range o.lines {
 			fmt.Fprintln(buf, l)
 		}
+	}
+	if len(goObjects) != 1 {
+		fmt.Fprintln(buf, ")")
 	}
 }
 

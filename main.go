@@ -44,9 +44,15 @@ type imp struct {
 	path string
 }
 
+type pathElement struct {
+	name  string
+	kind  string
+	index int
+}
+
 type processContext struct {
 	// inputs
-	path   []string
+	path   []pathElement
 	un     *unstructured.Unstructured
 	o      interface{}
 	name   string
@@ -61,11 +67,11 @@ func sanitize(name string) string {
 	return strcase.ToLowerCamel(name)
 }
 
-func (pc processContext) new(path, name string, o interface{}, parent reflect.Kind) processContext {
+func (pc processContext) new(path pathElement, name string, o interface{}, parent reflect.Kind) processContext {
 	pc2 := processContext{}
-	pc2.path = make([]string, len(pc.path))
+	pc2.path = make([]pathElement, len(pc.path))
 	copy(pc2.path, pc.path)
-	if path != "" {
+	if path.name != "" || path.kind != "map" {
 		pc2.path = append(pc2.path, path)
 	}
 	pc2.un = pc.un
@@ -85,16 +91,25 @@ func nameImport(kImportPath string) string {
 	return s[len(s)-1]
 }
 
-func missing(un interface{}, path []string) bool {
+func missing(un interface{}, path []pathElement) bool {
 	if len(path) == 0 {
 		return false
 	}
-	if next, ok := un.(map[string]interface{}); ok {
-		val, exists := next[path[0]]
-		if !exists {
-			return true
+	if path[0].kind == "map" {
+		if next, ok := un.(map[string]interface{}); ok {
+			val, exists := next[path[0].name]
+			if !exists {
+				return true
+			}
+			return missing(val, path[1:])
 		}
-		return missing(val, path[1:])
+	} else if path[0].kind == "slice" {
+		if next, ok := un.([]interface{}); ok {
+			if len(next) < path[0].index {
+				val := next[path[0].index]
+				return missing(val, path[1:])
+			}
+		}
 	}
 	return true
 }
@@ -159,9 +174,11 @@ func processMapValue(pc processContext) {
 }
 
 func processHelper(pc processContext) {
+	fmt.Println("DEBUG processHelper-test", pc.name, pc.path)
 	if missing(pc.un.Object, pc.path) {
 		return
 	}
+	fmt.Println("DEBUG processHelper-found", pc.name, pc.path)
 	ve := reflect.ValueOf(pc.o)
 	te := reflect.TypeOf(pc.o)
 	ptrDeref := ""
@@ -198,7 +215,7 @@ func processHelper(pc processContext) {
 			}
 			tag := getTag(te.Field(i))
 			name := te.Field(i).Name
-			pc2 := pc.new(tag, name, f.Interface(), te.Kind())
+			pc2 := pc.new(pathElement{name: tag, kind: "map"}, name, f.Interface(), te.Kind())
 			processHelper(pc2)
 		}
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
@@ -229,11 +246,11 @@ func processHelper(pc processContext) {
 		for _, key := range ve.MapKeys() {
 			last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 			val := ve.MapIndex(key)
-			pcKey := pc.new("", pc.name, key.Interface(), te.Kind())
+			pcKey := pc.new(pathElement{kind: "map"}, pc.name, key.Interface(), te.Kind())
 			last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 			processMapKey(pcKey)
 			last.lines[len(last.lines)-1] = last.lines[len(last.lines)-1] + ":"
-			pcVal := pc.new("", pc.name, val.Interface(), te.Kind())
+			pcVal := pc.new(pathElement{kind: "map"}, pc.name, val.Interface(), te.Kind())
 			processMapValue(pcVal)
 			last.lines[len(last.lines)-1] = last.lines[len(last.lines)-1] + ","
 		}
@@ -249,7 +266,7 @@ func processHelper(pc processContext) {
 		last.lines = append(last.lines, fmt.Sprintf("%v[]%v%v{", ltype, sliceNi, sliceElem.Name()))
 		for i := 0; i < ve.Len(); i++ {
 			index := ve.Index(i)
-			pc2 := pc.new("", pc.name, index.Interface(), kind)
+			pc2 := pc.new(pathElement{kind: "slice", index: i}, pc.name, index.Interface(), kind)
 			processHelper(pc2)
 		}
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
@@ -291,10 +308,10 @@ func process(o interface{}, un *unstructured.Unstructured) (imports []imp, goObj
 			// skip type meta as that is schema's job
 			continue
 		}
-		var path []string
+		var path []pathElement
 		tag := getTag(te.Field(i))
 		if tag != "" {
-			path = append(path, tag)
+			path = append(path, pathElement{name: tag, kind: "map"})
 		}
 		name := te.Field(i).Name
 		pc := processContext{
@@ -382,7 +399,7 @@ func printLines(goObjects []goObject, buf *bytes.Buffer) {
 	}
 	lastName := ""
 	for _, o := range goObjects {
-		if lastName != o.name {
+		if lastName != o.name && len(goObjects) != 1 {
 			fmt.Fprintf(buf, "// %v %q\n", o.kind, o.name)
 			lastName = o.name
 		} else {
@@ -404,14 +421,17 @@ func printLines(goObjects []goObject, buf *bytes.Buffer) {
 }
 
 func read() [][]byte {
-	data, err := os.ReadFile("./examples/ns_and_pv.yaml")
+	path := "./examples/clusterrole.yaml"
+	var all [][]byte
+	data, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 	split := strings.Split(string(data), "---")
-	all := make([][]byte, len(split))
 	for i, _ := range split {
-		all[i] = []byte(split[i])
+		if len(split[i]) != 0 {
+			all = append(all, []byte(split[i]))
+		}
 	}
 	return all
 }

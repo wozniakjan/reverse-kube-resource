@@ -13,6 +13,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/iancoleman/strcase"
+
 	"golang.org/x/tools/go/ast/astutil"
 	v1 "k8s.io/api/core/v1"
 	apiresource "k8s.io/apimachinery/pkg/api/resource"
@@ -53,6 +55,10 @@ type processContext struct {
 	// inputs/outputs
 	goObjects *[]goObject
 	imports   *[]imp
+}
+
+func sanitize(name string) string {
+	return strcase.ToLowerCamel(name)
 }
 
 func (pc processContext) new(path, name string, o interface{}, parent reflect.Kind) processContext {
@@ -201,7 +207,7 @@ func processHelper(pc processContext) {
 		varName := fmt.Sprintf("%q", ve.Interface())
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		if ptrDeref != "" {
-			varName = fmt.Sprintf("%v%v", pc.un.GetName(), te.Name())
+			varName = sanitize(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
 			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
 			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
 		}
@@ -252,8 +258,8 @@ func processHelper(pc processContext) {
 		varName := ve.Interface()
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		if ptrDeref != "" {
-			varName = fmt.Sprintf("%v%v", pc.un.GetName(), te.Name())
-			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
+			varName = sanitize(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
+			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %v", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
 			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
 		}
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
@@ -268,7 +274,7 @@ func process(o interface{}, un *unstructured.Unstructured) (imports []imp, goObj
 	te := reflect.TypeOf(o).Elem()
 	ni := nameImport(te.PkgPath())
 
-	varName := fmt.Sprintf("%v%v", un.GetName(), te.Name())
+	varName := sanitize(fmt.Sprintf("%v-%v", un.GetName(), te.Name()))
 	imports = append(imports, imp{name: ni, path: te.PkgPath()})
 	goObjects = []goObject{goObject{name: un.GetName(), kind: te.Name()}}
 	imports = []imp{}
@@ -425,6 +431,7 @@ func main() {
 	printLines(goObjects, &buf)
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
+		fmt.Printf("%v", string(buf.Bytes()))
 		panic(err)
 	}
 	fmt.Printf("%v", string(formatted))

@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-var src = "package xyz"
+var src = `package xyz`
 
 type object struct {
 	rt runtime.Object
@@ -54,6 +54,7 @@ type processContext struct {
 	// inputs
 	path   []pathElement
 	un     *unstructured.Unstructured
+	ro     runtime.Object
 	o      interface{}
 	name   string
 	parent reflect.Kind
@@ -74,12 +75,13 @@ func (pc processContext) new(path pathElement, name string, o interface{}, paren
 	if path.name != "" || path.kind != "map" {
 		pc2.path = append(pc2.path, path)
 	}
+	pc2.goObjects = pc.goObjects
+	pc2.imports = pc.imports
 	pc2.un = pc.un
+	pc2.ro = pc.ro
 	pc2.o = o
 	pc2.name = name
 	pc2.parent = parent
-	pc2.goObjects = pc.goObjects
-	pc2.imports = pc.imports
 	return pc2
 }
 
@@ -105,10 +107,11 @@ func missing(un interface{}, path []pathElement) bool {
 		}
 	} else if path[0].kind == "slice" {
 		if next, ok := un.([]interface{}); ok {
-			if len(next) < path[0].index {
+			if len(next) > path[0].index {
 				val := next[path[0].index]
 				return missing(val, path[1:])
 			}
+		} else {
 		}
 	}
 	return true
@@ -174,13 +177,12 @@ func processMapValue(pc processContext) {
 }
 
 func processHelper(pc processContext) {
-	fmt.Println("DEBUG processHelper-test", pc.name, pc.path)
 	if missing(pc.un.Object, pc.path) {
 		return
 	}
-	fmt.Println("DEBUG processHelper-found", pc.name, pc.path)
 	ve := reflect.ValueOf(pc.o)
 	te := reflect.TypeOf(pc.o)
+	teo := te
 	ptrDeref := ""
 	for ve.Kind() == reflect.Ptr {
 		ve = ve.Elem()
@@ -271,6 +273,10 @@ func processHelper(pc processContext) {
 		}
 		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, "},")
+	case reflect.Invalid:
+		// this happens when empty structs are used to initialize some value
+		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
+		last.lines = append(last.lines, fmt.Sprintf("%v%v%v.%v{},", ltype, ptrDeref, ni, teo.Elem().Name()))
 	default:
 		varName := ve.Interface()
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
@@ -286,7 +292,7 @@ func processHelper(pc processContext) {
 	return
 }
 
-func process(o interface{}, un *unstructured.Unstructured) (imports []imp, goObjects []goObject) {
+func process(o runtime.Object, un *unstructured.Unstructured) (imports []imp, goObjects []goObject) {
 	ve := reflect.ValueOf(o).Elem()
 	te := reflect.TypeOf(o).Elem()
 	ni := nameImport(te.PkgPath())
@@ -318,6 +324,7 @@ func process(o interface{}, un *unstructured.Unstructured) (imports []imp, goObj
 			name:      name,
 			parent:    reflect.Struct,
 			o:         ifc,
+			ro:        o,
 			un:        un,
 			path:      path,
 			goObjects: &goObjects,
@@ -421,7 +428,7 @@ func printLines(goObjects []goObject, buf *bytes.Buffer) {
 }
 
 func read() [][]byte {
-	path := "./examples/clusterrole.yaml"
+	path := "./examples/emptydir.yaml"
 	var all [][]byte
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -447,6 +454,7 @@ func main() {
 	}
 	imports, goObjects := processObjects(objs)
 	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "// Code generated. DO NOT EDIT!\n\n")
 	printImports(imports, &buf)
 	printLines(goObjects, &buf)
 	formatted, err := format.Source(buf.Bytes())

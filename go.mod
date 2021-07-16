@@ -1,4 +1,4 @@
-module github.com/kubermatic/resource-gen
+module github.com/wozniakjan/reverse-kube-resource
 
 go 1.16
 

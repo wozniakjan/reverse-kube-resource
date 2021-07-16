@@ -1,0 +1,561 @@
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+# This YAML file contains RBAC API objects,
+# which are necessary to run csi controller plugin
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-cinder-controller-sa
+  namespace: kcp-system
+---
+# Source: openstack-cinder-csi/templates/nodeplugin-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-cinder-node-sa
+  namespace: kcp-system
+---
+# Source: openstack-cinder-csi/templates/storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-cinder-sc-delete
+provisioner: cinder.csi.openstack.org
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+---
+# Source: openstack-cinder-csi/templates/storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-cinder-sc-retain
+provisioner: cinder.csi.openstack.org
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+# external Provisioner
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-role
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list"]
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-snapshotter-role
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  # Secret permission is optional.
+  # Enable it if your driver needs secret.
+  # For example, `csi.storage.k8s.io/snapshotter-secret-name` is set in VolumeSnapshotClass.
+  # See https://kubernetes-csi.github.io/docs/secrets-and-credentials.html for more details.
+  #  - apiGroups: [""]
+  #    resources: ["secrets"]
+  #    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents/status"]
+    verbs: ["update"]
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-resizer-role
+rules:
+  # The following rule should be uncommented for plugins that require secrets
+  # for provisioning.
+  # - apiGroups: [""]
+  #   resources: ["secrets"]
+  #   verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims/status"]
+    verbs: ["patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+---
+# Source: openstack-cinder-csi/templates/nodeplugin-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin-role
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-binding
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kcp-system
+roleRef:
+  kind: ClusterRole
+  name: csi-attacher-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-binding
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kcp-system
+roleRef:
+  kind: ClusterRole
+  name: csi-provisioner-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-snapshotter-binding
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kcp-system
+roleRef:
+  kind: ClusterRole
+  name: csi-snapshotter-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-resizer-binding
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kcp-system
+roleRef:
+  kind: ClusterRole
+  name: csi-resizer-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: openstack-cinder-csi/templates/nodeplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin-binding
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-node-sa
+    namespace: kcp-system
+roleRef:
+  kind: ClusterRole
+  name: csi-nodeplugin-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-resizer-cfg
+  namespace: kcp-system
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-resizer-role-cfg
+  namespace: kcp-system
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kcp-system
+roleRef:
+  kind: Role
+  name: external-resizer-cfg
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-statefulset.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: openstack-cinder-csi-controllerplugin
+  labels:
+    component: controllerplugin
+    app: openstack-cinder-csi
+    release: cinder-csi
+    chart: openstack-cinder-csi-1.3.8
+    heritage: Helm
+spec:
+  clusterIP: None
+---
+# Source: openstack-cinder-csi/templates/nodeplugin-daemonset.yaml
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: openstack-cinder-csi-nodeplugin
+  labels:
+    component: nodeplugin
+    app: openstack-cinder-csi
+    release: cinder-csi
+    chart: openstack-cinder-csi-1.3.8
+    heritage: Helm
+spec:
+  selector:
+    matchLabels:
+      component: nodeplugin
+      app: openstack-cinder-csi
+      release: cinder-csi
+  template:
+    metadata:
+      labels:
+        component: nodeplugin
+        app: openstack-cinder-csi
+        release: cinder-csi
+        chart: openstack-cinder-csi-1.3.8
+        heritage: Helm
+    spec:
+      tolerations:
+        - operator: Exists
+      serviceAccount: csi-cinder-node-sa
+      hostNetwork: true
+      containers:
+        - name: node-driver-registrar
+          image: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock"]
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: registration-dir
+              mountPath: /registration
+        - name: liveness-probe
+          image: "k8s.gcr.io/sig-storage/livenessprobe:v2.1.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --csi-address=/csi/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+        - name: cinder-csi-plugin
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: "docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/kubernetes/cloud-config
+          ports:
+            - containerPort: 9808
+              name: healthz
+              protocol: TCP
+          # The probe
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 60
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: kubelet-dir
+              mountPath: /var/lib/kubelet
+              mountPropagation: "Bidirectional"
+            - name: pods-probe-dir
+              mountPath: /dev
+              mountPropagation: "HostToContainer"
+            - mountPath: /etc/cacert
+              name: cacert
+              readOnly: true
+            - mountPath: /etc/kubernetes
+              name: cloud-config
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/cinder.csi.openstack.org
+            type: DirectoryOrCreate
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: Directory
+        - name: kubelet-dir
+          hostPath:
+            path: /var/lib/kubelet
+            type: Directory
+        # - name: pods-cloud-data
+        #   hostPath:
+        #     path: /var/lib/cloud/data
+        #     type: Directory
+        - name: pods-probe-dir
+          hostPath:
+            path: /dev
+            type: Directory
+        - name: cloud-config
+          hostPath:
+            path: /etc/kubernetes
+        
+        - hostPath:
+            path: /etc/cacert
+          name: cacert
+---
+# Source: openstack-cinder-csi/templates/controllerplugin-statefulset.yaml
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: openstack-cinder-csi-controllerplugin
+  labels:
+    component: controllerplugin
+    app: openstack-cinder-csi
+    release: cinder-csi
+    chart: openstack-cinder-csi-1.3.8
+    heritage: Helm
+spec:
+  serviceName: openstack-cinder-csi-controllerplugin
+  replicas: 1
+  selector:
+    matchLabels:
+      component: controllerplugin
+      app: openstack-cinder-csi
+      release: cinder-csi
+  template:
+    metadata:
+      labels:
+        component: controllerplugin
+        app: openstack-cinder-csi
+        release: cinder-csi
+        chart: openstack-cinder-csi-1.3.8
+        heritage: Helm
+    spec:
+      serviceAccount: csi-cinder-controller-sa
+      containers:
+        - name: csi-attacher
+          image: "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-provisioner
+          image: "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+            - "--default-fstype=ext4"
+            - "--feature-gates=Topology=true"
+            - "--extra-create-metadata"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-snapshotter
+          image: "k8s.gcr.io/sig-storage/csi-snapshotter:v2.1.3"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+        - name: csi-resizer
+          image: "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+            - "--handle-volume-inuse-error=false"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: liveness-probe
+          image: "k8s.gcr.io/sig-storage/livenessprobe:v2.1.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+        - name: cinder-csi-plugin
+          image: "docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+            - "--cluster=$(CLUSTER_NAME)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/kubernetes/cloud-config
+            - name: CLUSTER_NAME
+              value: kubernetes
+          ports:
+            - containerPort: 9808
+              name: healthz
+              protocol: TCP
+          # The probe
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 60
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - mountPath: /etc/cacert
+              name: cacert
+              readOnly: true
+            - mountPath: /etc/kubernetes
+              name: cloud-config
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          emptyDir:
+        - name: cloud-config
+          hostPath:
+            path: /etc/kubernetes
+        
+        - hostPath:
+            path: /etc/cacert
+          name: cacert
+---
+# Source: openstack-cinder-csi/templates/cinder-csi-driver.yaml
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: cinder.csi.openstack.org
+spec:
+  attachRequired: true
+  podInfoOnMount: true
+  volumeLifecycleModes:
+  - Persistent
+  - Ephemeral

@@ -34,9 +34,10 @@ type object struct {
 }
 
 type goObject struct {
-	lines []string
-	name  string
-	kind  string
+	helpers map[string]string
+	lines   []string
+	name    string
+	kind    string
 }
 
 type imp struct {
@@ -226,11 +227,9 @@ func processHelper(pc processContext) {
 		varName := fmt.Sprintf("%q", ve.Interface())
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		if ptrDeref != "" {
-			varName = sanitize(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
-			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
-			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
+			varName = sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.name, ve.Interface()))
+			last.helpers[varName] = fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())
 		}
-		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	case reflect.Map:
 		valElem := te.Elem()
@@ -278,14 +277,12 @@ func processHelper(pc processContext) {
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v.%v{},", ltype, ptrDeref, ni, teo.Elem().Name()))
 	default:
-		varName := ve.Interface()
+		varName := fmt.Sprintf("%v", ve.Interface())
 		last := &(*pc.goObjects)[len((*pc.goObjects))-1]
 		if ptrDeref != "" {
-			varName = sanitize(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
-			ptrObj := goObject{lines: []string{fmt.Sprintf("%v %v = %v", varName, teType, ve.Interface())}, name: last.name, kind: last.kind}
-			(*pc.goObjects) = append([]goObject{ptrObj}, (*pc.goObjects)...)
+			varName = sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.name, ve.Interface()))
+			last.helpers[varName] = fmt.Sprintf("%v %v = %v", varName, teType, ve.Interface())
 		}
-		last = &(*pc.goObjects)[len((*pc.goObjects))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	}
 
@@ -299,7 +296,7 @@ func process(o runtime.Object, un *unstructured.Unstructured) (imports []imp, go
 
 	varName := sanitize(fmt.Sprintf("%v-%v", un.GetName(), te.Name()))
 	imports = append(imports, imp{name: ni, path: te.PkgPath()})
-	goObjects = []goObject{goObject{name: un.GetName(), kind: te.Name()}}
+	goObjects = []goObject{goObject{name: un.GetName(), kind: te.Name(), helpers: make(map[string]string)}}
 	imports = []imp{}
 	last := &goObjects[len(goObjects)-1]
 	last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
@@ -399,36 +396,38 @@ func getUnstructuredObject(data []byte) *unstructured.Unstructured {
 }
 
 func printLines(goObjects []goObject, buf *bytes.Buffer) {
-	if len(goObjects) == 1 {
+	if len(goObjects) == 0 {
+		return
+	}
+	single := false
+	if len(goObjects) == 1 && len(goObjects[0].helpers) == 0 {
+		single = true
 		fmt.Fprintf(buf, "var ")
 	} else {
 		fmt.Fprintln(buf, "var (")
 	}
-	lastName := ""
 	for _, o := range goObjects {
-		if lastName != o.name && len(goObjects) != 1 {
+		if !single {
 			fmt.Fprintf(buf, "// %v %q\n", o.kind, o.name)
-			lastName = o.name
-		} else {
-			if len(o.lines) > 1 {
-				fmt.Fprintln(buf, "")
-				fmt.Fprintln(buf, "")
-			}
+		}
+		for _, l := range o.helpers {
+			fmt.Fprintln(buf, l)
+		}
+		if len(o.helpers) != 0 {
+			fmt.Fprintln(buf, "")
 		}
 		for _, l := range o.lines {
 			fmt.Fprintln(buf, l)
 		}
-		if len(o.lines) > 1 {
-			fmt.Fprintln(buf, "")
-		}
+		fmt.Fprintln(buf, "")
 	}
-	if len(goObjects) != 1 {
+	if !single {
 		fmt.Fprintln(buf, ")")
 	}
 }
 
 func read() [][]byte {
-	path := "./examples/emptydir.yaml"
+	path := "./examples/openstack-cinder-csi.yaml"
 	var all [][]byte
 	data, err := os.ReadFile(path)
 	if err != nil {

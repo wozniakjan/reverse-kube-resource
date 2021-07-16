@@ -14,9 +14,9 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 )
 
-func printImports(obj []Import, buf *bytes.Buffer) {
+func printImports(pkg string, obj []Import, buf *bytes.Buffer) {
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "", src, 0)
+	f, err := parser.ParseFile(fset, "", fmt.Sprintf("package %v", pkg), 0)
 	if err != nil {
 		panic(err)
 	}
@@ -59,10 +59,10 @@ func printLines(rawVars []RawVar, buf *bytes.Buffer) {
 	}
 }
 
-func Print(imports []Import, vars []RawVar) {
+func Print(pkg string, imports []Import, vars []RawVar) {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "// Code generated. DO NOT EDIT!\n\n")
-	printImports(imports, &buf)
+	printImports(pkg, imports, &buf)
 	printLines(vars, &buf)
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {

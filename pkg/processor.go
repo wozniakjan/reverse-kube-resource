@@ -18,8 +18,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-var src = `package xyz`
-
 type object struct {
 	rt runtime.Object
 	un *unstructured.Unstructured

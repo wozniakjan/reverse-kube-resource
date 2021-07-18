@@ -355,18 +355,15 @@ func getRuntimeObject(data []byte) runtime.Object {
 	// TODO allow adding CRDs to the scheme
 	codecs := serializer.NewCodecFactory(scheme.Scheme)
 	obj, _, err := codecs.UniversalDeserializer().Decode(data, nil, nil)
-	if err != nil {
-		panic(fmt.Sprintf("FAILED: %v", err))
-	}
+	checkFatal(err)
 	return obj
 }
 
 func getUnstructuredObject(data []byte) *unstructured.Unstructured {
 	obj := &unstructured.Unstructured{}
 	dec := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
-	if _, _, err := dec.Decode(data, nil, obj); err != nil {
-		panic(err)
-	}
+	_, _, err := dec.Decode(data, nil, obj)
+	checkFatal(err)
 	obj.GetName()
 	return obj
 }

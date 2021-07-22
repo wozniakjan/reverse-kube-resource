@@ -6,7 +6,7 @@ This tool is intended to generate golang code tightly coupled with [Kubernetes c
 The input are raw yaml manifests and the tool leverages Kubernetes scheme to generate valid golang structures compatible with client-go.
 
 ### Example:
-The directory `[examples](./examples)` contains few sample yaml files with kubernetes resources.
+The directory [`examples`](./examples) contains few sample yaml files with kubernetes resources.
 
 ```yaml
 apiVersion: v1

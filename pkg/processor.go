@@ -50,7 +50,7 @@ type processingContext struct {
 	name   string
 	parent reflect.Kind
 
-	// inputs/outputs
+	// outputs
 	rawVars *[]RawVar
 	imports *[]Import
 }
@@ -167,7 +167,28 @@ func processMapValue(pc processingContext) {
 	return
 }
 
-func processHelper(pc processingContext) {
+func processKubermatic(pc processingContext) {
+	te := reflect.TypeOf(pc.o).Elem()
+	ni := nameImport(te.PkgPath())
+	if ni != "" {
+		(*pc.imports) = append((*pc.imports), Import{name: ni, path: te.PkgPath()})
+	}
+	funName := strcase.ToCamel(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
+	varName := sanitize(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
+	typeName := fmt.Sprintf("%v.%v", ni, te.Name())
+
+	last := &(*pc.rawVars)[len((*pc.rawVars))-1]
+	last.lines = append(last.lines, fmt.Sprintf("func %vCreator() reconciling.Named%vCreatorGetter {", funName, te.Name()))
+	last.lines = append(last.lines, fmt.Sprintf("return func() (string, reconciling.%vCreator) {", te.Name()))
+	last.lines = append(last.lines, fmt.Sprintf("t := %v.DeepCopy()", varName))
+	last.lines = append(last.lines, fmt.Sprintf("return t.Name, func(o *%v) (*%v, error) {", typeName, typeName))
+	last.lines = append(last.lines, fmt.Sprintf("return t, nil"))
+	last.lines = append(last.lines, fmt.Sprintf("}"))
+	last.lines = append(last.lines, fmt.Sprintf("}"))
+	last.lines = append(last.lines, fmt.Sprintf("}"))
+}
+
+func processKubernetes(pc processingContext) {
 	if missing(pc.un.Object, pc.path) {
 		return
 	}
@@ -209,7 +230,7 @@ func processHelper(pc processingContext) {
 			tag := getTag(te.Field(i))
 			name := te.Field(i).Name
 			pc2 := pc.new(pathElement{name: tag, kind: "map"}, name, f.Interface(), te.Kind())
-			processHelper(pc2)
+			processKubernetes(pc2)
 		}
 		last = &(*pc.rawVars)[len((*pc.rawVars))-1]
 		last.lines = append(last.lines, "},")
@@ -258,7 +279,7 @@ func processHelper(pc processingContext) {
 		for i := 0; i < ve.Len(); i++ {
 			index := ve.Index(i)
 			pc2 := pc.new(pathElement{kind: "slice", index: i}, pc.name, index.Interface(), kind)
-			processHelper(pc2)
+			processKubernetes(pc2)
 		}
 		last = &(*pc.rawVars)[len((*pc.rawVars))-1]
 		last.lines = append(last.lines, "},")
@@ -279,7 +300,7 @@ func processHelper(pc processingContext) {
 	return
 }
 
-func process(o runtime.Object, un *unstructured.Unstructured) (imports []Import, rawVars []RawVar) {
+func process(o runtime.Object, un *unstructured.Unstructured, kubermatic bool) (imports []Import, rawVars []RawVar) {
 	ve := reflect.ValueOf(o).Elem()
 	te := reflect.TypeOf(o).Elem()
 	ni := nameImport(te.PkgPath())
@@ -289,6 +310,16 @@ func process(o runtime.Object, un *unstructured.Unstructured) (imports []Import,
 	rawVars = []RawVar{RawVar{name: un.GetName(), kind: te.Name(), helpers: make(map[string]string)}}
 	imports = []Import{}
 	last := &rawVars[len(rawVars)-1]
+	if kubermatic {
+		pc := processingContext{
+			o:       o,
+			un:      un,
+			rawVars: &rawVars,
+			imports: &imports,
+		}
+		processKubermatic(pc)
+		return
+	}
 	last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
 	for i := 0; i < ve.NumField(); i++ {
 		f := ve.Field(i)
@@ -317,7 +348,7 @@ func process(o runtime.Object, un *unstructured.Unstructured) (imports []Import,
 			rawVars: &rawVars,
 			imports: &imports,
 		}
-		processHelper(pc)
+		processKubernetes(pc)
 	}
 	last = &rawVars[len(rawVars)-1]
 	last.lines = append(last.lines, "}")
@@ -341,12 +372,15 @@ func getTag(f reflect.StructField) string {
 	return s[0]
 }
 
-func ProcessObjects(obj []object) (allImports []Import, allRawVars []RawVar) {
+func ProcessObjects(obj []object, kubermatic bool) (allImports []Import, allRawVars []RawVar) {
 	_ = v1.Namespace{}
 	for _, o := range obj {
-		imports, rawVars := process(o.rt, o.un)
+		imports, rawVars := process(o.rt, o.un, kubermatic)
 		allImports = append(allImports, imports...)
 		allRawVars = append(allRawVars, rawVars...)
+	}
+	if kubermatic {
+		allImports = append(allImports, Import{path: "k8c.io/kubermatic/v2/pkg/resources/reconciling"})
 	}
 	return
 }

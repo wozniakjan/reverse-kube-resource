@@ -17,6 +17,7 @@ func fail(msg string) {
 func main() {
 	pkg := flag.String("package", "", "Name of the package the output go files should have")
 	src := flag.String("src", "", "Source path to either yaml file or directory containing yaml files")
+	kubermaticInterfaces := flag.Bool("kubermatic-interfaces", false, "Optional flag to output generation of kubermatic interfaces instead of kubernetes API resources.")
 	boilerplate := flag.String("go-header-file", "", "File containing boilerplate header text. The string YEAR will be replaced with the current 4-digit year.")
 	flag.Parse()
 	if *pkg == "" {
@@ -27,6 +28,6 @@ func main() {
 	}
 
 	objs := rev.ReadInput(*src)
-	imports, goObjects := rev.ProcessObjects(objs)
-	rev.Print(*pkg, *boilerplate, imports, goObjects)
+	imports, goObjects := rev.ProcessObjects(objs, *kubermaticInterfaces)
+	rev.Print(*pkg, *boilerplate, imports, goObjects, *kubermaticInterfaces)
 }

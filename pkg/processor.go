@@ -173,12 +173,11 @@ func processKubermatic(pc processingContext) {
 	if ni != "" {
 		(*pc.imports) = append((*pc.imports), Import{name: ni, path: te.PkgPath()})
 	}
-	funName := strcase.ToCamel(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
 	varName := sanitize(fmt.Sprintf("%v-%v", pc.un.GetName(), te.Name()))
 	typeName := fmt.Sprintf("%v.%v", ni, te.Name())
 
 	last := &(*pc.rawVars)[len((*pc.rawVars))-1]
-	last.lines = append(last.lines, fmt.Sprintf("func %vCreator() reconciling.Named%vCreatorGetter {", funName, te.Name()))
+	last.lines = append(last.lines, fmt.Sprintf("func %vCreator() reconciling.Named%vCreatorGetter {", varName, te.Name()))
 	last.lines = append(last.lines, fmt.Sprintf("return func() (string, reconciling.%vCreator) {", te.Name()))
 	last.lines = append(last.lines, fmt.Sprintf("t := %v.DeepCopy()", varName))
 	last.lines = append(last.lines, fmt.Sprintf("return t.Name, func(o *%v) (*%v, error) {", typeName, typeName))

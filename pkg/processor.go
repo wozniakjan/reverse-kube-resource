@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -187,6 +188,50 @@ func processKubermatic(pc processingContext) {
 	last.lines = append(last.lines, fmt.Sprintf("}"))
 }
 
+func sortMapKeys(keys []reflect.Value) []reflect.Value {
+	if len(keys) < 2 {
+		return keys
+	}
+
+	switch keys[0].Type().Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		sorted := make([]int, 0, len(keys))
+		for _, k := range keys {
+			sorted = append(sorted, k.Interface().(int))
+		}
+		sort.Ints(sorted)
+		out := make([]reflect.Value, 0, len(keys))
+		for _, i := range sorted {
+			out = append(out, reflect.ValueOf(i))
+		}
+		return out
+	case reflect.Float32, reflect.Float64:
+		sorted := make([]float64, 0, len(keys))
+		for _, k := range keys {
+			sorted = append(sorted, k.Interface().(float64))
+		}
+		sort.Float64s(sorted)
+		out := make([]reflect.Value, 0, len(keys))
+		for _, i := range sorted {
+			out = append(out, reflect.ValueOf(i))
+		}
+		return out
+	case reflect.String:
+		sorted := make([]string, 0, len(keys))
+		for _, k := range keys {
+			sorted = append(sorted, k.Interface().(string))
+		}
+		sort.Strings(sorted)
+		out := make([]reflect.Value, 0, len(keys))
+		for _, i := range sorted {
+			out = append(out, reflect.ValueOf(i))
+		}
+		return out
+	default:
+		return keys
+	}
+}
+
 func processKubernetes(pc processingContext) {
 	if missing(pc.un.Object, pc.path) {
 		return
@@ -254,7 +299,8 @@ func processKubernetes(pc processingContext) {
 		}
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v: map[%v%v]%v%v{", pc.name, keyNi, keyElem.Name(), valNi, valElem.Name()))
-		for _, key := range ve.MapKeys() {
+		keys := sortMapKeys(ve.MapKeys())
+		for _, key := range keys {
 			last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 			val := ve.MapIndex(key)
 			pcKey := pc.new(pathElement{kind: "map"}, pc.name, key.Interface(), te.Kind())

@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"golang.org/x/tools/go/ast/astutil"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func checkFatal(err error) {
@@ -122,11 +124,27 @@ func read(path string) (all [][]byte) {
 	return all
 }
 
-func ReadInput(path string) (objs []object) {
+func updateCRDScheme(crdPackages string) error {
+	if crdPackages == "" {
+		return nil
+	}
+	packages := strings.Split(crdPackages, ",")
+	for _, p := range packages {
+		if err := updateCRDScheme(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ReadInput(path, crdPackages string) (objs []object) {
 	d := read(path)
+	err := updateCRDScheme(crdPackages)
+	checkFatal(err)
+	codecs := serializer.NewCodecFactory(scheme.Scheme)
 	for _, data := range d {
 		objs = append(objs, object{
-			rt: getRuntimeObject(data),
+			rt: getRuntimeObject(data, codecs),
 			un: getUnstructuredObject(data),
 		})
 	}

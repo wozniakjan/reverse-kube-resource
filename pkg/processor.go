@@ -16,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 type object struct {
@@ -430,9 +429,7 @@ func ProcessObjects(obj []object, kubermatic bool) (allImports []Import, allRawV
 	return
 }
 
-func getRuntimeObject(data []byte) runtime.Object {
-	// TODO allow adding CRDs to the scheme
-	codecs := serializer.NewCodecFactory(scheme.Scheme)
+func getRuntimeObject(data []byte, codecs serializer.CodecFactory) runtime.Object {
 	obj, _, err := codecs.UniversalDeserializer().Decode(data, nil, nil)
 	checkFatal(err)
 	return obj

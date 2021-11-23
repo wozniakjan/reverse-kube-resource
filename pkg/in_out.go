@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"go/ast"
 	"go/format"
+	"go/importer"
 	"go/parser"
 	"go/printer"
 	"go/token"
+	"go/types"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -16,9 +18,16 @@ import (
 	"time"
 
 	"golang.org/x/tools/go/ast/astutil"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 )
+
+type crd struct {
+	schema.GroupVersion
+	runtime.Object
+}
 
 func checkFatal(err error) {
 	if err != nil {
@@ -124,13 +133,125 @@ func read(path string) (all [][]byte) {
 	return all
 }
 
-func updateCRDScheme(crdPackages string) error {
+func getGV(pkg *types.Package) *schema.GroupVersion {
+	// TODO: implement
+	// parse source code for GV registration
+	// there should be just one CRD GVK per package
+	return &schema.GroupVersion{
+		Group:   "gx1",
+		Version: "vx1",
+	}
+}
+
+func getCRD(gv *schema.GroupVersion, obj types.Object) crd {
+	//TODO: implement
+	return crd{}
+}
+
+func crdSchemeInPackage(files []*ast.File, runtimeObjectInterface *types.Interface) ([]crd, error) {
+	config := &types.Config{
+		Error: func(e error) {
+			panic(e)
+		},
+		Importer: importer.Default(),
+	}
+
+	info := types.Info{
+		Types: make(map[ast.Expr]types.TypeAndValue),
+		Defs:  make(map[*ast.Ident]types.Object),
+		Uses:  make(map[*ast.Ident]types.Object),
+	}
+	fset := token.NewFileSet()
+	pkg, err := config.Check("genval", fset, files, &info)
+	if err != nil {
+		return nil, err
+	}
+
+	var crds []crd
+	gv := getGV(pkg)
+	if gv != nil {
+		return crds, nil
+	}
+	scope := pkg.Scope()
+	for _, name := range scope.Names() {
+		obj := scope.Lookup(name)
+		_, ok := obj.Type().Underlying().(*types.Struct)
+		if !ok {
+			continue
+		}
+		implements := types.Implements(obj.Type(), runtimeObjectInterface)
+		if implements {
+			crd := getCRD(gv, obj)
+			crds = append(crds, crd)
+		}
+	}
+	return crds, nil
+}
+
+func appendScheme(crds []crd) error {
+	//TODO: implement
+	return nil
+}
+
+func updateCRDScheme(crdPackage string, runtimeObjectInterface *types.Interface) error {
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, crdPackage, nil, parser.AllErrors)
+	if err != nil {
+		return err
+	}
+	for _, pkg := range pkgs {
+		files := []*ast.File{}
+		for _, f := range pkg.Files {
+			files = append(files, f)
+		}
+		crds, err := crdSchemeInPackage(files, runtimeObjectInterface)
+		if err != nil {
+			return err
+		}
+		err = appendScheme(crds)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getRuntimeObjectInterface() (*types.Interface, error) {
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "", runtimeObjectProgram, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &types.Config{
+		Importer: importer.Default(),
+	}
+
+	info := types.Info{
+		Types: make(map[ast.Expr]types.TypeAndValue),
+		Defs:  make(map[*ast.Ident]types.Object),
+		Uses:  make(map[*ast.Ident]types.Object),
+	}
+	pkg, e := config.Check("genval", fset, []*ast.File{f}, &info)
+	if pkg == nil {
+		return nil, e
+	}
+	i := pkg.Scope().Lookup("Object").Type().Underlying().(*types.Interface)
+	//	fmt.Println("implements", types.Implements(s, i))
+	return i, nil
+}
+
+func updateCRDsScheme(crdPackages string) error {
 	if crdPackages == "" {
 		return nil
 	}
 	packages := strings.Split(crdPackages, ",")
+	runtimeObjectInterface, err := getRuntimeObjectInterface()
+	if err != nil {
+		return err
+	}
 	for _, p := range packages {
-		if err := updateCRDScheme(p); err != nil {
+		if err := updateCRDScheme(p, runtimeObjectInterface); err != nil {
 			return err
 		}
 	}
@@ -139,7 +260,7 @@ func updateCRDScheme(crdPackages string) error {
 
 func ReadInput(path, crdPackages string) (objs []object) {
 	d := read(path)
-	err := updateCRDScheme(crdPackages)
+	err := updateCRDsScheme(crdPackages)
 	checkFatal(err)
 	codecs := serializer.NewCodecFactory(scheme.Scheme)
 	for _, data := range d {

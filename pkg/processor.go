@@ -344,7 +344,7 @@ func processKubernetes(pc processingContext) {
 	return
 }
 
-func process(o runtime.Object, un *unstructured.Unstructured, kubermatic bool) (imports []Import, rawVars []RawVar) {
+func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMeta bool) (imports []Import, rawVars []RawVar) {
 	ve := reflect.ValueOf(o).Elem()
 	te := reflect.TypeOf(o).Elem()
 	ni := nameImport(te.PkgPath())
@@ -374,6 +374,10 @@ func process(o runtime.Object, un *unstructured.Unstructured, kubermatic bool) (
 		ifc := f.Interface()
 		if _, ok := ifc.(metav1.TypeMeta); ok {
 			// skip type meta as that is schema's job
+			continue
+		}
+		if _, ok := ifc.(metav1.ObjectMeta); !ok && onlyMeta {
+			// cmdline arg wants to generate just object meta
 			continue
 		}
 		var path []pathElement
@@ -416,10 +420,10 @@ func getTag(f reflect.StructField) string {
 	return s[0]
 }
 
-func ProcessObjects(obj []object, kubermatic bool) (allImports []Import, allRawVars []RawVar) {
+func ProcessObjects(obj []object, kubermatic, onlyMeta bool) (allImports []Import, allRawVars []RawVar) {
 	_ = v1.Namespace{}
 	for _, o := range obj {
-		imports, rawVars := process(o.rt, o.un, kubermatic)
+		imports, rawVars := process(o.rt, o.un, kubermatic, onlyMeta)
 		allImports = append(allImports, imports...)
 		allRawVars = append(allRawVars, rawVars...)
 	}

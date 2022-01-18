@@ -352,7 +352,7 @@ func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMe
 	varName := sanitize(fmt.Sprintf("%v-%v", un.GetName(), te.Name()))
 	imports = append(imports, Import{name: ni, path: te.PkgPath()})
 	rawVars = []RawVar{RawVar{name: un.GetName(), kind: te.Name(), helpers: make(map[string]string)}}
-	imports = []Import{}
+	imports = []Import{Import{name: ni, path: te.PkgPath()}}
 	last := &rawVars[len(rawVars)-1]
 	if kubermatic {
 		pc := processingContext{

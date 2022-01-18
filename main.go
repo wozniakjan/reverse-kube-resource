@@ -20,6 +20,7 @@ func main() {
 	kubermaticInterfaces := flag.Bool("kubermatic-interfaces", false, "Optional flag to output generation of kubermatic interfaces instead of kubernetes API resources.")
 	boilerplate := flag.String("go-header-file", "", "File containing boilerplate header text. The string YEAR will be replaced with the current 4-digit year.")
 	crdPackages := flag.String("crd-packages", "", "Comma separated list of packages containing CRD definitions")
+	onlyMeta := flag.Bool("only-meta", false, "Generate only metadata, don't go to spec")
 	flag.Parse()
 	if *pkg == "" {
 		fail("Missing required flag -package")
@@ -29,6 +30,6 @@ func main() {
 	}
 
 	objs := rev.ReadInput(*src, *crdPackages)
-	imports, goObjects := rev.ProcessObjects(objs, *kubermaticInterfaces)
+	imports, goObjects := rev.ProcessObjects(objs, *kubermaticInterfaces, *onlyMeta)
 	rev.Print(*pkg, *boilerplate, imports, goObjects, *kubermaticInterfaces)
 }

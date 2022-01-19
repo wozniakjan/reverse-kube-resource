@@ -260,7 +260,7 @@ func updateCRDsScheme(crdPackages string) error {
 	return nil
 }
 
-func ReadInput(path, crdPackages string) (objs []object) {
+func ReadInput(path, crdPackages string, unstructured bool) (objs []object) {
 	d := read(path)
 	err := updateCRDsScheme(crdPackages)
 	// TODO: do this dynamically
@@ -270,10 +270,17 @@ func ReadInput(path, crdPackages string) (objs []object) {
 	checkFatal(err)
 	codecs := serializer.NewCodecFactory(scheme.Scheme)
 	for _, data := range d {
-		objs = append(objs, object{
-			rt: getRuntimeObject(data, codecs),
-			un: getUnstructuredObject(data),
-		})
+		if unstructured {
+			objs = append(objs, object{
+				rt: getUnstructuredObject(data),
+				un: getUnstructuredObject(data),
+			})
+		} else {
+			objs = append(objs, object{
+				rt: getRuntimeObject(data, codecs),
+				un: getUnstructuredObject(data),
+			})
+		}
 	}
 	return
 }

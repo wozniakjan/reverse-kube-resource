@@ -392,8 +392,9 @@ func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMe
 		processKubermatic(pc)
 		return
 	}
-	last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
 	if _, ok := o.(*unstructured.Unstructured); ok {
+		unstructuredVarName := fmt.Sprintf("%v%v", varName, un.GetKind())
+		last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", unstructuredVarName, ni, te.Name()))
 		pc := processingContext{
 			o:       un.Object,
 			un:      un,
@@ -403,6 +404,7 @@ func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMe
 		last.lines = append(last.lines, "Object:")
 		processUnstructured(pc, onlyMeta)
 	} else {
+		last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
 		for i := 0; i < ve.NumField(); i++ {
 			f := ve.Field(i)
 			if !f.CanInterface() {

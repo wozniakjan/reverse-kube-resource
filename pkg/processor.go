@@ -55,6 +55,10 @@ type processingContext struct {
 	imports *[]Import
 }
 
+var unstructuredMeta = map[string]bool{
+	"apiVersion": true, "kind": true, "metadata": true, "name": true, "namespace": true,
+}
+
 func sanitize(name string) string {
 	return strcase.ToLowerCamel(name)
 }
@@ -231,6 +235,30 @@ func sortMapKeys(keys []reflect.Value) []reflect.Value {
 	}
 }
 
+func processUnstructured(pc processingContext, onlyMeta bool) {
+	last := &(*pc.rawVars)[len((*pc.rawVars))-1]
+	switch o := pc.o.(type) {
+	case map[string]interface{}:
+		last.lines[len(last.lines)-1] += "map[string]interface{}{"
+		keys := make([]string, 0, len(o))
+		for k, _ := range o {
+			if onlyMeta && !unstructuredMeta[k] {
+				continue
+			}
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
+			pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
+			processUnstructured(pc2, onlyMeta)
+		}
+		last.lines = append(last.lines, fmt.Sprintf("},"))
+	default:
+		last.lines[len(last.lines)-1] += fmt.Sprintf("\"%v\",", pc.o)
+	}
+}
+
 func processKubernetes(pc processingContext) {
 	if missing(pc.un.Object, pc.path) {
 		return
@@ -365,38 +393,49 @@ func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMe
 		return
 	}
 	last.lines = append(last.lines, fmt.Sprintf("%v = %v.%v{", varName, ni, te.Name()))
-	for i := 0; i < ve.NumField(); i++ {
-		f := ve.Field(i)
-		if !f.CanInterface() {
-			// skip unexported fields
-			continue
-		}
-		ifc := f.Interface()
-		if _, ok := ifc.(metav1.TypeMeta); ok {
-			// skip type meta as that is schema's job
-			continue
-		}
-		if _, ok := ifc.(metav1.ObjectMeta); !ok && onlyMeta {
-			// cmdline arg wants to generate just object meta
-			continue
-		}
-		var path []pathElement
-		tag := getTag(te.Field(i))
-		if tag != "" {
-			path = append(path, pathElement{name: tag, kind: "map"})
-		}
-		name := te.Field(i).Name
+	if _, ok := o.(*unstructured.Unstructured); ok {
 		pc := processingContext{
-			name:    name,
-			parent:  reflect.Struct,
-			o:       ifc,
-			ro:      o,
+			o:       un.Object,
 			un:      un,
-			path:    path,
 			rawVars: &rawVars,
 			imports: &imports,
 		}
-		processKubernetes(pc)
+		last.lines = append(last.lines, "Object:")
+		processUnstructured(pc, onlyMeta)
+	} else {
+		for i := 0; i < ve.NumField(); i++ {
+			f := ve.Field(i)
+			if !f.CanInterface() {
+				// skip unexported fields
+				continue
+			}
+			ifc := f.Interface()
+			if _, ok := ifc.(metav1.TypeMeta); ok {
+				// skip type meta as that is schema's job
+				continue
+			}
+			if _, ok := ifc.(metav1.ObjectMeta); !ok && onlyMeta {
+				// cmdline arg wants to generate just object meta
+				continue
+			}
+			var path []pathElement
+			tag := getTag(te.Field(i))
+			if tag != "" {
+				path = append(path, pathElement{name: tag, kind: "map"})
+			}
+			name := te.Field(i).Name
+			pc := processingContext{
+				name:    name,
+				parent:  reflect.Struct,
+				o:       ifc,
+				ro:      o,
+				un:      un,
+				path:    path,
+				rawVars: &rawVars,
+				imports: &imports,
+			}
+			processKubernetes(pc)
+		}
 	}
 	last = &rawVars[len(rawVars)-1]
 	last.lines = append(last.lines, "}")

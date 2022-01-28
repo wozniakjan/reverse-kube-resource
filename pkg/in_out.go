@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -65,7 +66,12 @@ func printLines(rawVars []RawVar, buf *bytes.Buffer, kubermatic bool) {
 		if !single {
 			fmt.Fprintf(buf, "// %v %q\n", o.kind, o.name)
 		}
+		var helpersSorted []string
 		for _, l := range o.helpers {
+			helpersSorted = append(helpersSorted, l)
+		}
+		sort.Strings(helpersSorted)
+		for _, l := range helpersSorted {
 			fmt.Fprintln(buf, l)
 		}
 		if len(o.helpers) != 0 {

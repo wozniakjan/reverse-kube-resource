@@ -1,0 +1,17 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: emptydir-sample
+spec:
+  template:
+    spec:
+      volumes:
+        - name: socket-dir
+          emptyDir:
+        - name: cloud-config
+          hostPath:
+            path: /etc/kubernetes
+        - hostPath:
+            path: /etc/cacert
+          name: cacert
+

@@ -22,8 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	"k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1"
 )
 
 type crd struct {
@@ -263,10 +261,6 @@ func updateCRDsScheme(crdPackages string) error {
 func ReadInput(path, crdPackages string, unstructured bool) (objs []object) {
 	d := read(path)
 	err := updateCRDsScheme(crdPackages)
-	// TODO: do this dynamically
-	if err := v1alpha1.AddToScheme(scheme.Scheme); err != nil {
-		panic(err)
-	}
 	checkFatal(err)
 	codecs := serializer.NewCodecFactory(scheme.Scheme)
 	for _, data := range d {

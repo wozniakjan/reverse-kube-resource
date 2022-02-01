@@ -243,7 +243,7 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 	last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 	switch o := pc.o.(type) {
 	case map[string]interface{}:
-		last.lines[len(last.lines)-1] += "map[string]interface{}{"
+		last.lines[len(last.lines)-1] += "map[string]interface{}{\n"
 		keys := make([]string, 0, len(o))
 		for k, _ := range o {
 			if onlyMeta && !unstructuredMeta[k] {
@@ -255,6 +255,13 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 		for _, k := range keys {
 			last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
 			pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
+			processUnstructured(pc2, onlyMeta)
+		}
+		last.lines = append(last.lines, fmt.Sprintf("},"))
+	case []interface{}:
+		last.lines[len(last.lines)-1] += "[]interface{}{\n"
+		for _, e := range o {
+			pc2 := pc.new(pathElement{}, "", e, reflect.Slice)
 			processUnstructured(pc2, onlyMeta)
 		}
 		last.lines = append(last.lines, fmt.Sprintf("},"))

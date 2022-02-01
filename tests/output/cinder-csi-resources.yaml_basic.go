@@ -29,29 +29,29 @@ var (
 	}
 
 	// StorageClass "csi-cinder-sc-delete"
-	csiCinderScDeleteAllowVolumeExpansionTrue bool                                 = true
-	csiCinderScDeleteReclaimPolicyDelete      corev1.PersistentVolumeReclaimPolicy = "Delete"
+	csiCinderScDeleteStorageClassAllowVolumeExpansionTrue bool                                 = true
+	csiCinderScDeleteStorageClassReclaimPolicyDelete      corev1.PersistentVolumeReclaimPolicy = "Delete"
 
 	csiCinderScDeleteStorageClass = storagev1.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "csi-cinder-sc-delete",
 		},
 		Provisioner:          "cinder.csi.openstack.org",
-		ReclaimPolicy:        &csiCinderScDeleteReclaimPolicyDelete,
-		AllowVolumeExpansion: &csiCinderScDeleteAllowVolumeExpansionTrue,
+		ReclaimPolicy:        &csiCinderScDeleteStorageClassReclaimPolicyDelete,
+		AllowVolumeExpansion: &csiCinderScDeleteStorageClassAllowVolumeExpansionTrue,
 	}
 
 	// StorageClass "csi-cinder-sc-retain"
-	csiCinderScRetainAllowVolumeExpansionTrue bool                                 = true
-	csiCinderScRetainReclaimPolicyRetain      corev1.PersistentVolumeReclaimPolicy = "Retain"
+	csiCinderScRetainStorageClassAllowVolumeExpansionTrue bool                                 = true
+	csiCinderScRetainStorageClassReclaimPolicyRetain      corev1.PersistentVolumeReclaimPolicy = "Retain"
 
 	csiCinderScRetainStorageClass = storagev1.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "csi-cinder-sc-retain",
 		},
 		Provisioner:          "cinder.csi.openstack.org",
-		ReclaimPolicy:        &csiCinderScRetainReclaimPolicyRetain,
-		AllowVolumeExpansion: &csiCinderScRetainAllowVolumeExpansionTrue,
+		ReclaimPolicy:        &csiCinderScRetainStorageClassReclaimPolicyRetain,
+		AllowVolumeExpansion: &csiCinderScRetainStorageClassAllowVolumeExpansionTrue,
 	}
 
 	// ClusterRole "csi-attacher-role"
@@ -554,12 +554,12 @@ var (
 	}
 
 	// DaemonSet "openstack-cinder-csi-nodeplugin"
-	openstackCinderCsiNodepluginAllowPrivilegeEscalationTrue    bool                        = true
-	openstackCinderCsiNodepluginMountPropagationBidirectional   corev1.MountPropagationMode = "Bidirectional"
-	openstackCinderCsiNodepluginMountPropagationHostToContainer corev1.MountPropagationMode = "HostToContainer"
-	openstackCinderCsiNodepluginPrivilegedTrue                  bool                        = true
-	openstackCinderCsiNodepluginTypeDirectory                   corev1.HostPathType         = "Directory"
-	openstackCinderCsiNodepluginTypeDirectoryOrCreate           corev1.HostPathType         = "DirectoryOrCreate"
+	openstackCinderCsiNodepluginDaemonSetAllowPrivilegeEscalationTrue    bool                        = true
+	openstackCinderCsiNodepluginDaemonSetMountPropagationBidirectional   corev1.MountPropagationMode = "Bidirectional"
+	openstackCinderCsiNodepluginDaemonSetMountPropagationHostToContainer corev1.MountPropagationMode = "HostToContainer"
+	openstackCinderCsiNodepluginDaemonSetPrivilegedTrue                  bool                        = true
+	openstackCinderCsiNodepluginDaemonSetTypeDirectory                   corev1.HostPathType         = "Directory"
+	openstackCinderCsiNodepluginDaemonSetTypeDirectoryOrCreate           corev1.HostPathType         = "DirectoryOrCreate"
 
 	openstackCinderCsiNodepluginDaemonSet = appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -597,7 +597,7 @@ var (
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: "/var/lib/kubelet/plugins/cinder.csi.openstack.org",
-									Type: &openstackCinderCsiNodepluginTypeDirectoryOrCreate,
+									Type: &openstackCinderCsiNodepluginDaemonSetTypeDirectoryOrCreate,
 								},
 							},
 						},
@@ -606,7 +606,7 @@ var (
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: "/var/lib/kubelet/plugins_registry/",
-									Type: &openstackCinderCsiNodepluginTypeDirectory,
+									Type: &openstackCinderCsiNodepluginDaemonSetTypeDirectory,
 								},
 							},
 						},
@@ -615,7 +615,7 @@ var (
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: "/var/lib/kubelet",
-									Type: &openstackCinderCsiNodepluginTypeDirectory,
+									Type: &openstackCinderCsiNodepluginDaemonSetTypeDirectory,
 								},
 							},
 						},
@@ -624,7 +624,7 @@ var (
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: "/dev",
-									Type: &openstackCinderCsiNodepluginTypeDirectory,
+									Type: &openstackCinderCsiNodepluginDaemonSetTypeDirectory,
 								},
 							},
 						},
@@ -750,12 +750,12 @@ var (
 								corev1.VolumeMount{
 									Name:             "kubelet-dir",
 									MountPath:        "/var/lib/kubelet",
-									MountPropagation: &openstackCinderCsiNodepluginMountPropagationBidirectional,
+									MountPropagation: &openstackCinderCsiNodepluginDaemonSetMountPropagationBidirectional,
 								},
 								corev1.VolumeMount{
 									Name:             "pods-probe-dir",
 									MountPath:        "/dev",
-									MountPropagation: &openstackCinderCsiNodepluginMountPropagationHostToContainer,
+									MountPropagation: &openstackCinderCsiNodepluginDaemonSetMountPropagationHostToContainer,
 								},
 								corev1.VolumeMount{
 									Name:      "cacert",
@@ -791,8 +791,8 @@ var (
 										"SYS_ADMIN",
 									},
 								},
-								Privileged:               &openstackCinderCsiNodepluginPrivilegedTrue,
-								AllowPrivilegeEscalation: &openstackCinderCsiNodepluginAllowPrivilegeEscalationTrue,
+								Privileged:               &openstackCinderCsiNodepluginDaemonSetPrivilegedTrue,
+								AllowPrivilegeEscalation: &openstackCinderCsiNodepluginDaemonSetAllowPrivilegeEscalationTrue,
 							},
 						},
 					},
@@ -809,7 +809,7 @@ var (
 	}
 
 	// StatefulSet "openstack-cinder-csi-controllerplugin"
-	openstackCinderCsiControllerpluginReplicas1 int32 = 1
+	openstackCinderCsiControllerpluginStatefulSetReplicas1 int32 = 1
 
 	openstackCinderCsiControllerpluginStatefulSet = appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -823,7 +823,7 @@ var (
 			},
 		},
 		Spec: appsv1.StatefulSetSpec{
-			Replicas: &openstackCinderCsiControllerpluginReplicas1,
+			Replicas: &openstackCinderCsiControllerpluginStatefulSetReplicas1,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":       "openstack-cinder-csi",
@@ -1057,16 +1057,16 @@ var (
 	}
 
 	// CSIDriver "cinder.csi.openstack.org"
-	cinderCsiOpenstackOrgAttachRequiredTrue bool = true
-	cinderCsiOpenstackOrgPodInfoOnMountTrue bool = true
+	cinderCsiOpenstackOrgCSIDriverAttachRequiredTrue bool = true
+	cinderCsiOpenstackOrgCSIDriverPodInfoOnMountTrue bool = true
 
 	cinderCsiOpenstackOrgCSIDriver = storagev1.CSIDriver{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cinder.csi.openstack.org",
 		},
 		Spec: storagev1.CSIDriverSpec{
-			AttachRequired: &cinderCsiOpenstackOrgAttachRequiredTrue,
-			PodInfoOnMount: &cinderCsiOpenstackOrgPodInfoOnMountTrue,
+			AttachRequired: &cinderCsiOpenstackOrgCSIDriverAttachRequiredTrue,
+			PodInfoOnMount: &cinderCsiOpenstackOrgCSIDriverPodInfoOnMountTrue,
 			VolumeLifecycleModes: []storagev1.VolumeLifecycleMode{
 				"Persistent",
 				"Ephemeral",

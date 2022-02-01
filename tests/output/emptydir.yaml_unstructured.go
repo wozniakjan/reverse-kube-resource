@@ -14,7 +14,21 @@ var emptydirSampleUnstructuredStatefulSet = v1unstructured.Unstructured{
 		"spec": map[string]interface{}{
 			"template": map[string]interface{}{
 				"spec": map[string]interface{}{
-					"volumes": "[map[emptyDir:<nil> name:socket-dir] map[hostPath:map[path:/etc/kubernetes] name:cloud-config] map[hostPath:map[path:/etc/cacert] name:cacert]]",
+					"volumes": []interface{}{
+						map[string]interface{}{
+							"name": "socket-dir",
+						}, map[string]interface{}{
+							"hostPath": map[string]interface{}{
+								"path": "/etc/kubernetes",
+							},
+							"name": "cloud-config",
+						}, map[string]interface{}{
+							"hostPath": map[string]interface{}{
+								"path": "/etc/cacert",
+							},
+							"name": "cacert",
+						},
+					},
 				},
 			},
 		},

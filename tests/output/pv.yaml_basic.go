@@ -10,7 +10,7 @@ import (
 
 var (
 	// PersistentVolume "pv0003"
-	pv0003VolumeModeFilesystem corev1.PersistentVolumeMode = "Filesystem"
+	pv0003PersistentVolumeVolumeModeFilesystem corev1.PersistentVolumeMode = "Filesystem"
 
 	pv0003PersistentVolume = corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
@@ -35,7 +35,7 @@ var (
 				"hard",
 				"nfsvers=4.1",
 			},
-			VolumeMode: &pv0003VolumeModeFilesystem,
+			VolumeMode: &pv0003PersistentVolumeVolumeModeFilesystem,
 		},
 	}
 )

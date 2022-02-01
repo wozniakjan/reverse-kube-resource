@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"regexp"
 	"sort"
@@ -476,7 +477,11 @@ func ProcessObjects(obj []object, kubermatic, onlyMeta bool) (allImports []Impor
 
 func getRuntimeObject(data []byte, codecs serializer.CodecFactory) runtime.Object {
 	obj, _, err := codecs.UniversalDeserializer().Decode(data, nil, nil)
-	checkFatal(err)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%w\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to decode using codes, trying unstructured instead\n")
+		return getUnstructuredObject(data)
+	}
 	return obj
 }
 

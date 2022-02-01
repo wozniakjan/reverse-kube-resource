@@ -313,8 +313,9 @@ func processKubernetes(pc processingContext) {
 		varName := fmt.Sprintf("%q", ve.Interface())
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		if ptrDeref != "" {
-			varName = sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.name, ve.Interface()))
-			last.helpers[varName] = fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())
+			var varLine string
+			varName, varLine = helperLine(pc, teType, kind, ve.Interface())
+			last.helpers[varName] = varLine
 		}
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	case reflect.Map:
@@ -369,13 +370,25 @@ func processKubernetes(pc processingContext) {
 		varName := fmt.Sprintf("%v", ve.Interface())
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		if ptrDeref != "" {
-			varName = sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.name, ve.Interface()))
-			last.helpers[varName] = fmt.Sprintf("%v %v = %v", varName, teType, ve.Interface())
+			var varLine string
+			varName, varLine = helperLine(pc, teType, kind, ve.Interface())
+			last.helpers[varName] = varLine
 		}
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	}
 
 	return
+}
+
+func helperLine(pc processingContext, typeName string, kind reflect.Kind, ifc interface{}) (string, string) {
+	name := sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.un.GetKind(), pc.name, ifc))
+	var line string
+	if kind == reflect.String {
+		line = fmt.Sprintf("%v %v = %q", name, typeName, ifc)
+	} else {
+		line = fmt.Sprintf("%v %v = %v", name, typeName, ifc)
+	}
+	return name, line
 }
 
 func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMeta bool) (imports []Import, rawVars []RawVar) {

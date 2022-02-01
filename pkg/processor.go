@@ -223,7 +223,10 @@ func sortMapKeys(keys []reflect.Value) []reflect.Value {
 	case reflect.String:
 		sorted := make([]string, 0, len(keys))
 		for _, k := range keys {
-			sorted = append(sorted, k.Interface().(string))
+			// strings are frequently aliased to something else, e.g. v1.ResourceName
+			// for them to be sortable, this converts them to string and later needs to
+			// convert back to the underlying type
+			sorted = append(sorted, fmt.Sprintf("%v", k.Interface()))
 		}
 		sort.Strings(sorted)
 		out := make([]reflect.Value, 0, len(keys))
@@ -328,8 +331,10 @@ func processKubernetes(pc processingContext) {
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v: map[%v%v]%v%v{", pc.name, keyNi, keyElem.Name(), valNi, valElem.Name()))
 		keys := sortMapKeys(ve.MapKeys())
-		for _, key := range keys {
+		for _, keyTyped := range keys {
 			last := &(*pc.rawVars)[len((*pc.rawVars))-1]
+			// convert back the sorted key to the underlying type
+			key := keyTyped.Convert(keyElem)
 			val := ve.MapIndex(key)
 			pcKey := pc.new(pathElement{kind: "map"}, pc.name, key.Interface(), te.Kind())
 			last = &(*pc.rawVars)[len((*pc.rawVars))-1]
@@ -478,8 +483,8 @@ func ProcessObjects(obj []object, kubermatic, onlyMeta bool) (allImports []Impor
 func getRuntimeObject(data []byte, codecs serializer.CodecFactory) runtime.Object {
 	obj, _, err := codecs.UniversalDeserializer().Decode(data, nil, nil)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%w\n", err)
-		fmt.Fprintf(os.Stderr, "Failed to decode using codes, trying unstructured instead\n")
+		fmt.Fprintf(os.Stderr, "Failed to decode using codecs, trying unstructured instead\n")
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return getUnstructuredObject(data)
 	}
 	return obj

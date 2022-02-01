@@ -11,6 +11,48 @@ var clusterRoleUnstructuredClusterRole = v1unstructured.Unstructured{
 		"metadata": map[string]interface{}{
 			"name": "cluster-role",
 		},
-		"rules": "[map[apiGroups:[] resources:[persistentvolumes] verbs:[get list watch patch]] map[apiGroups:[storage.k8s.io] resources:[csinodes] verbs:[get list watch]] map[apiGroups:[storage.k8s.io] resources:[volumeattachments] verbs:[get list watch patch]] map[apiGroups:[storage.k8s.io] resources:[volumeattachments/status] verbs:[patch]]]",
+		"rules": []interface{}{
+			map[string]interface{}{
+				"apiGroups": []interface{}{
+					"",
+				},
+				"resources": []interface{}{
+					"persistentvolumes",
+				},
+				"verbs": []interface{}{
+					"get", "list", "watch", "patch",
+				},
+			}, map[string]interface{}{
+				"apiGroups": []interface{}{
+					"storage.k8s.io",
+				},
+				"resources": []interface{}{
+					"csinodes",
+				},
+				"verbs": []interface{}{
+					"get", "list", "watch",
+				},
+			}, map[string]interface{}{
+				"apiGroups": []interface{}{
+					"storage.k8s.io",
+				},
+				"resources": []interface{}{
+					"volumeattachments",
+				},
+				"verbs": []interface{}{
+					"get", "list", "watch", "patch",
+				},
+			}, map[string]interface{}{
+				"apiGroups": []interface{}{
+					"storage.k8s.io",
+				},
+				"resources": []interface{}{
+					"volumeattachments/status",
+				},
+				"verbs": []interface{}{
+					"patch",
+				},
+			},
+		},
 	},
 }

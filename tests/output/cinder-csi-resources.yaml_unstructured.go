@@ -32,7 +32,7 @@ var (
 	// Unstructured "csi-cinder-sc-delete"
 	csiCinderScDeleteUnstructuredStorageClass = v1unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"allowVolumeExpansion": "true",
+			"allowVolumeExpansion": true,
 			"apiVersion":           "storage.k8s.io/v1",
 			"kind":                 "StorageClass",
 			"metadata": map[string]interface{}{
@@ -46,7 +46,7 @@ var (
 	// Unstructured "csi-cinder-sc-retain"
 	csiCinderScRetainUnstructuredStorageClass = v1unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"allowVolumeExpansion": "true",
+			"allowVolumeExpansion": true,
 			"apiVersion":           "storage.k8s.io/v1",
 			"kind":                 "StorageClass",
 			"metadata": map[string]interface{}{
@@ -65,7 +65,49 @@ var (
 			"metadata": map[string]interface{}{
 				"name": "csi-attacher-role",
 			},
-			"rules": "[map[apiGroups:[] resources:[persistentvolumes] verbs:[get list watch patch]] map[apiGroups:[storage.k8s.io] resources:[csinodes] verbs:[get list watch]] map[apiGroups:[storage.k8s.io] resources:[volumeattachments] verbs:[get list watch patch]] map[apiGroups:[storage.k8s.io] resources:[volumeattachments/status] verbs:[patch]]]",
+			"rules": []interface{}{
+				map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"persistentvolumes",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch", "patch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"csinodes",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumeattachments",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch", "patch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumeattachments/status",
+					},
+					"verbs": []interface{}{
+						"patch",
+					},
+				},
+			},
 		},
 	}
 
@@ -77,7 +119,89 @@ var (
 			"metadata": map[string]interface{}{
 				"name": "csi-provisioner-role",
 			},
-			"rules": "[map[apiGroups:[] resources:[persistentvolumes] verbs:[get list watch create delete]] map[apiGroups:[] resources:[persistentvolumeclaims] verbs:[get list watch update]] map[apiGroups:[storage.k8s.io] resources:[storageclasses] verbs:[get list watch]] map[apiGroups:[] resources:[nodes] verbs:[get list watch]] map[apiGroups:[storage.k8s.io] resources:[csinodes] verbs:[get list watch]] map[apiGroups:[] resources:[events] verbs:[list watch create update patch]] map[apiGroups:[snapshot.storage.k8s.io] resources:[volumesnapshots] verbs:[get list]] map[apiGroups:[snapshot.storage.k8s.io] resources:[volumesnapshotcontents] verbs:[get list]]]",
+			"rules": []interface{}{
+				map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"persistentvolumes",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch", "create", "delete",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"persistentvolumeclaims",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch", "update",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"storageclasses",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"nodes",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"csinodes",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"events",
+					},
+					"verbs": []interface{}{
+						"list", "watch", "create", "update", "patch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"snapshot.storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumesnapshots",
+					},
+					"verbs": []interface{}{
+						"get", "list",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"snapshot.storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumesnapshotcontents",
+					},
+					"verbs": []interface{}{
+						"get", "list",
+					},
+				},
+			},
 		},
 	}
 
@@ -89,7 +213,49 @@ var (
 			"metadata": map[string]interface{}{
 				"name": "csi-snapshotter-role",
 			},
-			"rules": "[map[apiGroups:[] resources:[events] verbs:[list watch create update patch]] map[apiGroups:[snapshot.storage.k8s.io] resources:[volumesnapshotclasses] verbs:[get list watch]] map[apiGroups:[snapshot.storage.k8s.io] resources:[volumesnapshotcontents] verbs:[create get list watch update delete]] map[apiGroups:[snapshot.storage.k8s.io] resources:[volumesnapshotcontents/status] verbs:[update]]]",
+			"rules": []interface{}{
+				map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"events",
+					},
+					"verbs": []interface{}{
+						"list", "watch", "create", "update", "patch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"snapshot.storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumesnapshotclasses",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"snapshot.storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumesnapshotcontents",
+					},
+					"verbs": []interface{}{
+						"create", "get", "list", "watch", "update", "delete",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"snapshot.storage.k8s.io",
+					},
+					"resources": []interface{}{
+						"volumesnapshotcontents/status",
+					},
+					"verbs": []interface{}{
+						"update",
+					},
+				},
+			},
 		},
 	}
 
@@ -101,7 +267,59 @@ var (
 			"metadata": map[string]interface{}{
 				"name": "csi-resizer-role",
 			},
-			"rules": "[map[apiGroups:[] resources:[persistentvolumes] verbs:[get list watch patch]] map[apiGroups:[] resources:[persistentvolumeclaims] verbs:[get list watch]] map[apiGroups:[] resources:[pods] verbs:[get list watch]] map[apiGroups:[] resources:[persistentvolumeclaims/status] verbs:[patch]] map[apiGroups:[] resources:[events] verbs:[list watch create update patch]]]",
+			"rules": []interface{}{
+				map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"persistentvolumes",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch", "patch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"persistentvolumeclaims",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"pods",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"persistentvolumeclaims/status",
+					},
+					"verbs": []interface{}{
+						"patch",
+					},
+				}, map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"events",
+					},
+					"verbs": []interface{}{
+						"list", "watch", "create", "update", "patch",
+					},
+				},
+			},
 		},
 	}
 
@@ -113,7 +331,19 @@ var (
 			"metadata": map[string]interface{}{
 				"name": "csi-nodeplugin-role",
 			},
-			"rules": "[map[apiGroups:[] resources:[events] verbs:[get list watch create update patch]]]",
+			"rules": []interface{}{
+				map[string]interface{}{
+					"apiGroups": []interface{}{
+						"",
+					},
+					"resources": []interface{}{
+						"events",
+					},
+					"verbs": []interface{}{
+						"get", "list", "watch", "create", "update", "patch",
+					},
+				},
+			},
 		},
 	}
 
@@ -130,7 +360,13 @@ var (
 				"kind":     "ClusterRole",
 				"name":     "csi-attacher-role",
 			},
-			"subjects": "[map[kind:ServiceAccount name:csi-cinder-controller-sa namespace:kube-system]]",
+			"subjects": []interface{}{
+				map[string]interface{}{
+					"kind":      "ServiceAccount",
+					"name":      "csi-cinder-controller-sa",
+					"namespace": "kube-system",
+				},
+			},
 		},
 	}
 
@@ -147,7 +383,13 @@ var (
 				"kind":     "ClusterRole",
 				"name":     "csi-provisioner-role",
 			},
-			"subjects": "[map[kind:ServiceAccount name:csi-cinder-controller-sa namespace:kube-system]]",
+			"subjects": []interface{}{
+				map[string]interface{}{
+					"kind":      "ServiceAccount",
+					"name":      "csi-cinder-controller-sa",
+					"namespace": "kube-system",
+				},
+			},
 		},
 	}
 
@@ -164,7 +406,13 @@ var (
 				"kind":     "ClusterRole",
 				"name":     "csi-snapshotter-role",
 			},
-			"subjects": "[map[kind:ServiceAccount name:csi-cinder-controller-sa namespace:kube-system]]",
+			"subjects": []interface{}{
+				map[string]interface{}{
+					"kind":      "ServiceAccount",
+					"name":      "csi-cinder-controller-sa",
+					"namespace": "kube-system",
+				},
+			},
 		},
 	}
 
@@ -181,7 +429,13 @@ var (
 				"kind":     "ClusterRole",
 				"name":     "csi-resizer-role",
 			},
-			"subjects": "[map[kind:ServiceAccount name:csi-cinder-controller-sa namespace:kube-system]]",
+			"subjects": []interface{}{
+				map[string]interface{}{
+					"kind":      "ServiceAccount",
+					"name":      "csi-cinder-controller-sa",
+					"namespace": "kube-system",
+				},
+			},
 		},
 	}
 
@@ -198,7 +452,13 @@ var (
 				"kind":     "ClusterRole",
 				"name":     "csi-nodeplugin-role",
 			},
-			"subjects": "[map[kind:ServiceAccount name:csi-cinder-node-sa namespace:kube-system]]",
+			"subjects": []interface{}{
+				map[string]interface{}{
+					"kind":      "ServiceAccount",
+					"name":      "csi-cinder-node-sa",
+					"namespace": "kube-system",
+				},
+			},
 		},
 	}
 
@@ -211,7 +471,19 @@ var (
 				"name":      "external-resizer-cfg",
 				"namespace": "kube-system",
 			},
-			"rules": "[map[apiGroups:[coordination.k8s.io] resources:[leases] verbs:[get watch list delete update create]]]",
+			"rules": []interface{}{
+				map[string]interface{}{
+					"apiGroups": []interface{}{
+						"coordination.k8s.io",
+					},
+					"resources": []interface{}{
+						"leases",
+					},
+					"verbs": []interface{}{
+						"get", "watch", "list", "delete", "update", "create",
+					},
+				},
+			},
 		},
 	}
 
@@ -229,7 +501,13 @@ var (
 				"kind":     "Role",
 				"name":     "external-resizer-cfg",
 			},
-			"subjects": "[map[kind:ServiceAccount name:csi-cinder-controller-sa namespace:kube-system]]",
+			"subjects": []interface{}{
+				map[string]interface{}{
+					"kind":      "ServiceAccount",
+					"name":      "csi-cinder-controller-sa",
+					"namespace": "kube-system",
+				},
+			},
 		},
 	}
 
@@ -288,11 +566,178 @@ var (
 						},
 					},
 					"spec": map[string]interface{}{
-						"containers":     "[map[args:[--csi-address=$(ADDRESS) --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)] env:[map[name:ADDRESS value:/csi/csi.sock] map[name:DRIVER_REG_SOCK_PATH value:/var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock] map[name:KUBE_NODE_NAME valueFrom:map[fieldRef:map[fieldPath:spec.nodeName]]]] image:k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0 imagePullPolicy:IfNotPresent lifecycle:map[preStop:map[exec:map[command:[/bin/sh -c rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock]]]] name:node-driver-registrar volumeMounts:[map[mountPath:/csi name:socket-dir] map[mountPath:/registration name:registration-dir]]] map[args:[--csi-address=/csi/csi.sock] image:k8s.gcr.io/sig-storage/livenessprobe:v2.1.0 imagePullPolicy:IfNotPresent name:liveness-probe volumeMounts:[map[mountPath:/csi name:socket-dir]]] map[args:[/bin/cinder-csi-plugin --nodeid=$(NODE_ID) --endpoint=$(CSI_ENDPOINT) --cloud-config=$(CLOUD_CONFIG)] env:[map[name:NODE_ID valueFrom:map[fieldRef:map[fieldPath:spec.nodeName]]] map[name:CSI_ENDPOINT value:unix://csi/csi.sock] map[name:CLOUD_CONFIG value:/etc/kubernetes/cloud-config]] image:docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0 imagePullPolicy:IfNotPresent livenessProbe:map[failureThreshold:5 httpGet:map[path:/healthz port:healthz] initialDelaySeconds:10 periodSeconds:60 timeoutSeconds:10] name:cinder-csi-plugin ports:[map[containerPort:9808 name:healthz protocol:TCP]] securityContext:map[allowPrivilegeEscalation:true capabilities:map[add:[SYS_ADMIN]] privileged:true] volumeMounts:[map[mountPath:/csi name:socket-dir] map[mountPath:/var/lib/kubelet mountPropagation:Bidirectional name:kubelet-dir] map[mountPath:/dev mountPropagation:HostToContainer name:pods-probe-dir] map[mountPath:/etc/cacert name:cacert readOnly:true] map[mountPath:/etc/kubernetes name:cloud-config readOnly:true]]]]",
-						"hostNetwork":    "true",
+						"containers": []interface{}{
+							map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=$(ADDRESS)", "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name":  "ADDRESS",
+										"value": "/csi/csi.sock",
+									}, map[string]interface{}{
+										"name":  "DRIVER_REG_SOCK_PATH",
+										"value": "/var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock",
+									}, map[string]interface{}{
+										"name": "KUBE_NODE_NAME",
+										"valueFrom": map[string]interface{}{
+											"fieldRef": map[string]interface{}{
+												"fieldPath": "spec.nodeName",
+											},
+										},
+									},
+								},
+								"image":           "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0",
+								"imagePullPolicy": "IfNotPresent",
+								"lifecycle": map[string]interface{}{
+									"preStop": map[string]interface{}{
+										"exec": map[string]interface{}{
+											"command": []interface{}{
+												"/bin/sh", "-c", "rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock",
+											},
+										},
+									},
+								},
+								"name": "node-driver-registrar",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/csi",
+										"name":      "socket-dir",
+									}, map[string]interface{}{
+										"mountPath": "/registration",
+										"name":      "registration-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=/csi/csi.sock",
+								},
+								"image":           "k8s.gcr.io/sig-storage/livenessprobe:v2.1.0",
+								"imagePullPolicy": "IfNotPresent",
+								"name":            "liveness-probe",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/csi",
+										"name":      "socket-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"/bin/cinder-csi-plugin", "--nodeid=$(NODE_ID)", "--endpoint=$(CSI_ENDPOINT)", "--cloud-config=$(CLOUD_CONFIG)",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name": "NODE_ID",
+										"valueFrom": map[string]interface{}{
+											"fieldRef": map[string]interface{}{
+												"fieldPath": "spec.nodeName",
+											},
+										},
+									}, map[string]interface{}{
+										"name":  "CSI_ENDPOINT",
+										"value": "unix://csi/csi.sock",
+									}, map[string]interface{}{
+										"name":  "CLOUD_CONFIG",
+										"value": "/etc/kubernetes/cloud-config",
+									},
+								},
+								"image":           "docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0",
+								"imagePullPolicy": "IfNotPresent",
+								"livenessProbe": map[string]interface{}{
+									"failureThreshold": 5,
+									"httpGet": map[string]interface{}{
+										"path": "/healthz",
+										"port": "healthz",
+									},
+									"initialDelaySeconds": 10,
+									"periodSeconds":       60,
+									"timeoutSeconds":      10,
+								},
+								"name": "cinder-csi-plugin",
+								"ports": []interface{}{
+									map[string]interface{}{
+										"containerPort": 9808,
+										"name":          "healthz",
+										"protocol":      "TCP",
+									},
+								},
+								"securityContext": map[string]interface{}{
+									"allowPrivilegeEscalation": true,
+									"capabilities": map[string]interface{}{
+										"add": []interface{}{
+											"SYS_ADMIN",
+										},
+									},
+									"privileged": true,
+								},
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/csi",
+										"name":      "socket-dir",
+									}, map[string]interface{}{
+										"mountPath":        "/var/lib/kubelet",
+										"mountPropagation": "Bidirectional",
+										"name":             "kubelet-dir",
+									}, map[string]interface{}{
+										"mountPath":        "/dev",
+										"mountPropagation": "HostToContainer",
+										"name":             "pods-probe-dir",
+									}, map[string]interface{}{
+										"mountPath": "/etc/cacert",
+										"name":      "cacert",
+										"readOnly":  true,
+									}, map[string]interface{}{
+										"mountPath": "/etc/kubernetes",
+										"name":      "cloud-config",
+										"readOnly":  true,
+									},
+								},
+							},
+						},
+						"hostNetwork":    true,
 						"serviceAccount": "csi-cinder-node-sa",
-						"tolerations":    "[map[operator:Exists]]",
-						"volumes":        "[map[hostPath:map[path:/var/lib/kubelet/plugins/cinder.csi.openstack.org type:DirectoryOrCreate] name:socket-dir] map[hostPath:map[path:/var/lib/kubelet/plugins_registry/ type:Directory] name:registration-dir] map[hostPath:map[path:/var/lib/kubelet type:Directory] name:kubelet-dir] map[hostPath:map[path:/dev type:Directory] name:pods-probe-dir] map[hostPath:map[path:/etc/kubernetes] name:cloud-config] map[hostPath:map[path:/etc/cacert] name:cacert]]",
+						"tolerations": []interface{}{
+							map[string]interface{}{
+								"operator": "Exists",
+							},
+						},
+						"volumes": []interface{}{
+							map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/var/lib/kubelet/plugins/cinder.csi.openstack.org",
+									"type": "DirectoryOrCreate",
+								},
+								"name": "socket-dir",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/var/lib/kubelet/plugins_registry/",
+									"type": "Directory",
+								},
+								"name": "registration-dir",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/var/lib/kubelet",
+									"type": "Directory",
+								},
+								"name": "kubelet-dir",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/dev",
+									"type": "Directory",
+								},
+								"name": "pods-probe-dir",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/etc/kubernetes",
+								},
+								"name": "cloud-config",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/etc/cacert",
+								},
+								"name": "cacert",
+							},
+						},
 					},
 				},
 			},
@@ -315,7 +760,7 @@ var (
 				"name": "openstack-cinder-csi-controllerplugin",
 			},
 			"spec": map[string]interface{}{
-				"replicas": "1",
+				"replicas": 1,
 				"selector": map[string]interface{}{
 					"matchLabels": map[string]interface{}{
 						"app":       "openstack-cinder-csi",
@@ -335,9 +780,177 @@ var (
 						},
 					},
 					"spec": map[string]interface{}{
-						"containers":     "[map[args:[--csi-address=$(ADDRESS) --timeout=3m] env:[map[name:ADDRESS value:/var/lib/csi/sockets/pluginproxy/csi.sock]] image:k8s.gcr.io/sig-storage/csi-attacher:v3.1.0 imagePullPolicy:IfNotPresent name:csi-attacher volumeMounts:[map[mountPath:/var/lib/csi/sockets/pluginproxy/ name:socket-dir]]] map[args:[--csi-address=$(ADDRESS) --timeout=3m --default-fstype=ext4 --feature-gates=Topology=true --extra-create-metadata] env:[map[name:ADDRESS value:/var/lib/csi/sockets/pluginproxy/csi.sock]] image:k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1 imagePullPolicy:IfNotPresent name:csi-provisioner volumeMounts:[map[mountPath:/var/lib/csi/sockets/pluginproxy/ name:socket-dir]]] map[args:[--csi-address=$(ADDRESS) --timeout=3m] env:[map[name:ADDRESS value:/var/lib/csi/sockets/pluginproxy/csi.sock]] image:k8s.gcr.io/sig-storage/csi-snapshotter:v2.1.3 imagePullPolicy:IfNotPresent name:csi-snapshotter volumeMounts:[map[mountPath:/var/lib/csi/sockets/pluginproxy/ name:socket-dir]]] map[args:[--csi-address=$(ADDRESS) --timeout=3m --handle-volume-inuse-error=false] env:[map[name:ADDRESS value:/var/lib/csi/sockets/pluginproxy/csi.sock]] image:k8s.gcr.io/sig-storage/csi-resizer:v1.1.0 imagePullPolicy:IfNotPresent name:csi-resizer volumeMounts:[map[mountPath:/var/lib/csi/sockets/pluginproxy/ name:socket-dir]]] map[args:[--csi-address=$(ADDRESS)] env:[map[name:ADDRESS value:/var/lib/csi/sockets/pluginproxy/csi.sock]] image:k8s.gcr.io/sig-storage/livenessprobe:v2.1.0 imagePullPolicy:IfNotPresent name:liveness-probe volumeMounts:[map[mountPath:/var/lib/csi/sockets/pluginproxy/ name:socket-dir]]] map[args:[/bin/cinder-csi-plugin --nodeid=$(NODE_ID) --endpoint=$(CSI_ENDPOINT) --cloud-config=$(CLOUD_CONFIG) --cluster=$(CLUSTER_NAME)] env:[map[name:NODE_ID valueFrom:map[fieldRef:map[fieldPath:spec.nodeName]]] map[name:CSI_ENDPOINT value:unix://csi/csi.sock] map[name:CLOUD_CONFIG value:/etc/kubernetes/cloud-config] map[name:CLUSTER_NAME value:kubernetes]] image:docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0 imagePullPolicy:IfNotPresent livenessProbe:map[failureThreshold:5 httpGet:map[path:/healthz port:healthz] initialDelaySeconds:10 periodSeconds:60 timeoutSeconds:10] name:cinder-csi-plugin ports:[map[containerPort:9808 name:healthz protocol:TCP]] volumeMounts:[map[mountPath:/csi name:socket-dir] map[mountPath:/etc/cacert name:cacert readOnly:true] map[mountPath:/etc/kubernetes name:cloud-config readOnly:true]]]]",
+						"containers": []interface{}{
+							map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=$(ADDRESS)", "--timeout=3m",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name":  "ADDRESS",
+										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
+									},
+								},
+								"image":           "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0",
+								"imagePullPolicy": "IfNotPresent",
+								"name":            "csi-attacher",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
+										"name":      "socket-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=$(ADDRESS)", "--timeout=3m", "--default-fstype=ext4", "--feature-gates=Topology=true", "--extra-create-metadata",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name":  "ADDRESS",
+										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
+									},
+								},
+								"image":           "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1",
+								"imagePullPolicy": "IfNotPresent",
+								"name":            "csi-provisioner",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
+										"name":      "socket-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=$(ADDRESS)", "--timeout=3m",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name":  "ADDRESS",
+										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
+									},
+								},
+								"image":           "k8s.gcr.io/sig-storage/csi-snapshotter:v2.1.3",
+								"imagePullPolicy": "IfNotPresent",
+								"name":            "csi-snapshotter",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
+										"name":      "socket-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=$(ADDRESS)", "--timeout=3m", "--handle-volume-inuse-error=false",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name":  "ADDRESS",
+										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
+									},
+								},
+								"image":           "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0",
+								"imagePullPolicy": "IfNotPresent",
+								"name":            "csi-resizer",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
+										"name":      "socket-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"--csi-address=$(ADDRESS)",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name":  "ADDRESS",
+										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
+									},
+								},
+								"image":           "k8s.gcr.io/sig-storage/livenessprobe:v2.1.0",
+								"imagePullPolicy": "IfNotPresent",
+								"name":            "liveness-probe",
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
+										"name":      "socket-dir",
+									},
+								},
+							}, map[string]interface{}{
+								"args": []interface{}{
+									"/bin/cinder-csi-plugin", "--nodeid=$(NODE_ID)", "--endpoint=$(CSI_ENDPOINT)", "--cloud-config=$(CLOUD_CONFIG)", "--cluster=$(CLUSTER_NAME)",
+								},
+								"env": []interface{}{
+									map[string]interface{}{
+										"name": "NODE_ID",
+										"valueFrom": map[string]interface{}{
+											"fieldRef": map[string]interface{}{
+												"fieldPath": "spec.nodeName",
+											},
+										},
+									}, map[string]interface{}{
+										"name":  "CSI_ENDPOINT",
+										"value": "unix://csi/csi.sock",
+									}, map[string]interface{}{
+										"name":  "CLOUD_CONFIG",
+										"value": "/etc/kubernetes/cloud-config",
+									}, map[string]interface{}{
+										"name":  "CLUSTER_NAME",
+										"value": "kubernetes",
+									},
+								},
+								"image":           "docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0",
+								"imagePullPolicy": "IfNotPresent",
+								"livenessProbe": map[string]interface{}{
+									"failureThreshold": 5,
+									"httpGet": map[string]interface{}{
+										"path": "/healthz",
+										"port": "healthz",
+									},
+									"initialDelaySeconds": 10,
+									"periodSeconds":       60,
+									"timeoutSeconds":      10,
+								},
+								"name": "cinder-csi-plugin",
+								"ports": []interface{}{
+									map[string]interface{}{
+										"containerPort": 9808,
+										"name":          "healthz",
+										"protocol":      "TCP",
+									},
+								},
+								"volumeMounts": []interface{}{
+									map[string]interface{}{
+										"mountPath": "/csi",
+										"name":      "socket-dir",
+									}, map[string]interface{}{
+										"mountPath": "/etc/cacert",
+										"name":      "cacert",
+										"readOnly":  true,
+									}, map[string]interface{}{
+										"mountPath": "/etc/kubernetes",
+										"name":      "cloud-config",
+										"readOnly":  true,
+									},
+								},
+							},
+						},
 						"serviceAccount": "csi-cinder-controller-sa",
-						"volumes":        "[map[emptyDir:<nil> name:socket-dir] map[hostPath:map[path:/etc/kubernetes] name:cloud-config] map[hostPath:map[path:/etc/cacert] name:cacert]]",
+						"volumes": []interface{}{
+							map[string]interface{}{
+								"name": "socket-dir",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/etc/kubernetes",
+								},
+								"name": "cloud-config",
+							}, map[string]interface{}{
+								"hostPath": map[string]interface{}{
+									"path": "/etc/cacert",
+								},
+								"name": "cacert",
+							},
+						},
 					},
 				},
 			},
@@ -353,9 +966,11 @@ var (
 				"name": "cinder.csi.openstack.org",
 			},
 			"spec": map[string]interface{}{
-				"attachRequired":       "true",
-				"podInfoOnMount":       "true",
-				"volumeLifecycleModes": "[Persistent Ephemeral]",
+				"attachRequired": true,
+				"podInfoOnMount": true,
+				"volumeLifecycleModes": []interface{}{
+					"Persistent", "Ephemeral",
+				},
 			},
 		},
 	}

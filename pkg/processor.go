@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"regexp"
 	"sort"
@@ -222,7 +223,10 @@ func sortMapKeys(keys []reflect.Value) []reflect.Value {
 	case reflect.String:
 		sorted := make([]string, 0, len(keys))
 		for _, k := range keys {
-			sorted = append(sorted, k.Interface().(string))
+			// strings are frequently aliased to something else, e.g. v1.ResourceName
+			// for them to be sortable, this converts them to string and later needs to
+			// convert back to the underlying type
+			sorted = append(sorted, fmt.Sprintf("%v", k.Interface()))
 		}
 		sort.Strings(sorted)
 		out := make([]reflect.Value, 0, len(keys))
@@ -249,13 +253,24 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
-			pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
+			if o[k] != nil {
+				last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
+				pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
+				processUnstructured(pc2, onlyMeta)
+			}
+		}
+		last.lines = append(last.lines, fmt.Sprintf("},"))
+	case []interface{}:
+		last.lines[len(last.lines)-1] += "[]interface{}{\n"
+		for _, e := range o {
+			pc2 := pc.new(pathElement{}, "", e, reflect.Slice)
 			processUnstructured(pc2, onlyMeta)
 		}
 		last.lines = append(last.lines, fmt.Sprintf("},"))
+	case string:
+		last.lines[len(last.lines)-1] += fmt.Sprintf("%q,", pc.o)
 	default:
-		last.lines[len(last.lines)-1] += fmt.Sprintf("\"%v\",", pc.o)
+		last.lines[len(last.lines)-1] += fmt.Sprintf("%v,", pc.o)
 	}
 }
 
@@ -309,8 +324,9 @@ func processKubernetes(pc processingContext) {
 		varName := fmt.Sprintf("%q", ve.Interface())
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		if ptrDeref != "" {
-			varName = sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.name, ve.Interface()))
-			last.helpers[varName] = fmt.Sprintf("%v %v = %q", varName, teType, ve.Interface())
+			var varLine string
+			varName, varLine = helperLine(pc, teType, kind, ve.Interface())
+			last.helpers[varName] = varLine
 		}
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	case reflect.Map:
@@ -327,8 +343,10 @@ func processKubernetes(pc processingContext) {
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		last.lines = append(last.lines, fmt.Sprintf("%v: map[%v%v]%v%v{", pc.name, keyNi, keyElem.Name(), valNi, valElem.Name()))
 		keys := sortMapKeys(ve.MapKeys())
-		for _, key := range keys {
+		for _, keyTyped := range keys {
 			last := &(*pc.rawVars)[len((*pc.rawVars))-1]
+			// convert back the sorted key to the underlying type
+			key := keyTyped.Convert(keyElem)
 			val := ve.MapIndex(key)
 			pcKey := pc.new(pathElement{kind: "map"}, pc.name, key.Interface(), te.Kind())
 			last = &(*pc.rawVars)[len((*pc.rawVars))-1]
@@ -363,13 +381,25 @@ func processKubernetes(pc processingContext) {
 		varName := fmt.Sprintf("%v", ve.Interface())
 		last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 		if ptrDeref != "" {
-			varName = sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.name, ve.Interface()))
-			last.helpers[varName] = fmt.Sprintf("%v %v = %v", varName, teType, ve.Interface())
+			var varLine string
+			varName, varLine = helperLine(pc, teType, kind, ve.Interface())
+			last.helpers[varName] = varLine
 		}
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	}
 
 	return
+}
+
+func helperLine(pc processingContext, typeName string, kind reflect.Kind, ifc interface{}) (string, string) {
+	name := sanitize(fmt.Sprintf("%v-%v-%v-%v", pc.un.GetName(), pc.un.GetKind(), pc.name, ifc))
+	var line string
+	if kind == reflect.String {
+		line = fmt.Sprintf("%v %v = %q", name, typeName, ifc)
+	} else {
+		line = fmt.Sprintf("%v %v = %v", name, typeName, ifc)
+	}
+	return name, line
 }
 
 func process(o runtime.Object, un *unstructured.Unstructured, kubermatic, onlyMeta bool) (imports []Import, rawVars []RawVar) {
@@ -476,7 +506,11 @@ func ProcessObjects(obj []object, kubermatic, onlyMeta bool) (allImports []Impor
 
 func getRuntimeObject(data []byte, codecs serializer.CodecFactory) runtime.Object {
 	obj, _, err := codecs.UniversalDeserializer().Decode(data, nil, nil)
-	checkFatal(err)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to decode using codecs, trying unstructured instead\n")
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		return getUnstructuredObject(data)
+	}
 	return obj
 }
 

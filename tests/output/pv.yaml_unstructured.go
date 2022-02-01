@@ -12,11 +12,15 @@ var pv0003UnstructuredPersistentVolume = v1unstructured.Unstructured{
 			"name": "pv0003",
 		},
 		"spec": map[string]interface{}{
-			"accessModes": "[ReadWriteOnce]",
+			"accessModes": []interface{}{
+				"ReadWriteOnce",
+			},
 			"capacity": map[string]interface{}{
 				"storage": "5Gi",
 			},
-			"mountOptions": "[hard nfsvers=4.1]",
+			"mountOptions": []interface{}{
+				"hard", "nfsvers=4.1",
+			},
 			"nfs": map[string]interface{}{
 				"path":   "/tmp",
 				"server": "172.17.0.2",

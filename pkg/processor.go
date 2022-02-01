@@ -253,9 +253,11 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
-			pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
-			processUnstructured(pc2, onlyMeta)
+			if o[k] != nil {
+				last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
+				pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
+				processUnstructured(pc2, onlyMeta)
+			}
 		}
 		last.lines = append(last.lines, fmt.Sprintf("},"))
 	case []interface{}:
@@ -390,7 +392,7 @@ func processKubernetes(pc processingContext) {
 }
 
 func helperLine(pc processingContext, typeName string, kind reflect.Kind, ifc interface{}) (string, string) {
-	name := sanitize(fmt.Sprintf("%v-%v-%v", pc.un.GetName(), pc.un.GetKind(), pc.name, ifc))
+	name := sanitize(fmt.Sprintf("%v-%v-%v-%v", pc.un.GetName(), pc.un.GetKind(), pc.name, ifc))
 	var line string
 	if kind == reflect.String {
 		line = fmt.Sprintf("%v %v = %q", name, typeName, ifc)

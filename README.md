@@ -19,7 +19,7 @@ status: {}
 
 After executing the generator with following arguments:
 ```
-$ go run main.go -package test -src ./examples/ns.yaml > output/ns.go
+$ go run github.com/wozniakjan/reverse-kube-resource -package test -src ./examples/ns.yaml > output/ns.go
 ```
 
 The output is a buildable go file:

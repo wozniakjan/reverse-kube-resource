@@ -21,6 +21,7 @@ func main() {
 	boilerplate := flag.String("go-header-file", "", "File containing boilerplate header text. The string YEAR will be replaced with the current 4-digit year.")
 	crdPackages := flag.String("crd-packages", "", "Comma separated list of packages containing CRD definitions")
 	onlyMeta := flag.Bool("only-meta", false, "Generate only metadata, don't go to spec")
+	namespace := flag.String("namespace", "", "Overwrite namespace")
 	unstructured := flag.Bool("unstructured", false, "Generate objects of type unstructured.Unstructured{} instead of the underlying types")
 	flag.Parse()
 	if *pkg == "" {
@@ -30,7 +31,7 @@ func main() {
 		fail("Missing required flag -src")
 	}
 
-	objs := rev.ReadInput(*src, *crdPackages, *unstructured)
+	objs := rev.ReadInput(*src, *crdPackages, *namespace, *unstructured)
 	imports, goObjects := rev.ProcessObjects(objs, *kubermaticInterfaces, *onlyMeta)
 	rev.Print(*pkg, *boilerplate, imports, goObjects, *kubermaticInterfaces)
 }

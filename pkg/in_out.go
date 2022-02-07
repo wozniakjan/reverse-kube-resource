@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"golang.org/x/tools/go/ast/astutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -264,7 +265,7 @@ func updateCRDsScheme(crdPackages string) error {
 	return nil
 }
 
-func ReadInput(path, crdPackages string, unstructured bool) (objs []object) {
+func ReadInput(path, crdPackages, namespace string, unstructured bool) (objs []object) {
 	d := read(path)
 	err := updateCRDsScheme(crdPackages)
 	checkFatal(err)
@@ -280,6 +281,17 @@ func ReadInput(path, crdPackages string, unstructured bool) (objs []object) {
 				rt: getRuntimeObject(data, codecs),
 				un: getUnstructuredObject(data),
 			})
+		}
+		if namespace != "" {
+			m, ok := objs[len(objs)-1].rt.(metav1.Object)
+			if ok {
+				m.SetNamespace(namespace)
+				objs[len(objs)-1].un.SetNamespace(namespace)
+			} else {
+				un := objs[len(objs)-1].un
+				err := fmt.Errorf("failed to set namespace on %v %v/%v", un.GetKind(), un.GetNamespace(), un.GetName())
+				checkFatal(err)
+			}
 		}
 	}
 	return

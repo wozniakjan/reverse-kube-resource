@@ -56,8 +56,9 @@ type processingContext struct {
 	imports *[]Import
 }
 
-var unstructuredMeta = map[string]bool{
-	"apiVersion": true, "kind": true, "metadata": true, "name": true, "namespace": true,
+// the value denotes recursive depth to keep
+var unstructuredMeta = map[string]int{
+	"apiVersion": 1, "kind": 1, "metadata": 1, "name": 1, "namespace": 1, "labels": 2,
 }
 
 func sanitize(name string) string {
@@ -239,6 +240,18 @@ func sortMapKeys(keys []reflect.Value) []reflect.Value {
 	}
 }
 
+func unstructuredMetaKeep(pc processingContext, name string) bool {
+	for i := len(pc.path) - 1; i >= 0; i-- {
+		if unstructuredMeta[pc.path[i].name] == 0 {
+			continue
+		}
+		if unstructuredMeta[pc.path[i].name] >= len(pc.path)-i {
+			return true
+		}
+	}
+	return false
+}
+
 func processUnstructured(pc processingContext, onlyMeta bool) {
 	last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 	switch o := pc.o.(type) {
@@ -246,7 +259,8 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 		last.lines[len(last.lines)-1] += "map[string]interface{}{"
 		keys := make([]string, 0, len(o))
 		for k, _ := range o {
-			if onlyMeta && !unstructuredMeta[k] {
+			pc2 := pc.new(pathElement{name: k}, "", o[k], reflect.Map)
+			if onlyMeta && !unstructuredMetaKeep(pc2, k) {
 				continue
 			}
 			keys = append(keys, k)
@@ -255,7 +269,7 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 		for _, k := range keys {
 			if o[k] != nil {
 				last.lines = append(last.lines, fmt.Sprintf("\"%v\":", k))
-				pc2 := pc.new(pathElement{}, "", o[k], reflect.Map)
+				pc2 := pc.new(pathElement{name: k}, "", o[k], reflect.Map)
 				processUnstructured(pc2, onlyMeta)
 			}
 		}

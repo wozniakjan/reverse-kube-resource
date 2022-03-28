@@ -5,23 +5,23 @@ package examples
 import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 var pv0003UnstructuredPersistentVolume = v1unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"apiVersion": "v1",
 		"kind":       "PersistentVolume",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "pv0003",
 		},
-		"spec": map[string]interface{}{
-			"accessModes": []interface{}{
+		"spec": map[string]any{
+			"accessModes": []any{
 				"ReadWriteOnce",
 			},
-			"capacity": map[string]interface{}{
+			"capacity": map[string]any{
 				"storage": "5Gi",
 			},
-			"mountOptions": []interface{}{
+			"mountOptions": []any{
 				"hard", "nfsvers=4.1",
 			},
-			"nfs": map[string]interface{}{
+			"nfs": map[string]any{
 				"path":   "/tmp",
 				"server": "172.17.0.2",
 			},

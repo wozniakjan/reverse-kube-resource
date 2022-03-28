@@ -5,13 +5,13 @@ package examples
 import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 var testUnstructuredNamespace = v1unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"apiVersion": "v1",
 		"kind":       "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "test",
 		},
-		"spec":   map[string]interface{}{},
-		"status": map[string]interface{}{},
+		"spec":   map[string]any{},
+		"status": map[string]any{},
 	},
 }

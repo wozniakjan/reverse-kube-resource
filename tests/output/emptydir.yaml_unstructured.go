@@ -5,25 +5,25 @@ package examples
 import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 var emptydirSampleUnstructuredStatefulSet = v1unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"apiVersion": "apps/v1",
 		"kind":       "StatefulSet",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "emptydir-sample",
 		},
-		"spec": map[string]interface{}{
-			"template": map[string]interface{}{
-				"spec": map[string]interface{}{
-					"volumes": []interface{}{
-						map[string]interface{}{
+		"spec": map[string]any{
+			"template": map[string]any{
+				"spec": map[string]any{
+					"volumes": []any{
+						map[string]any{
 							"name": "socket-dir",
-						}, map[string]interface{}{
-							"hostPath": map[string]interface{}{
+						}, map[string]any{
+							"hostPath": map[string]any{
 								"path": "/etc/kubernetes",
 							},
 							"name": "cloud-config",
-						}, map[string]interface{}{
-							"hostPath": map[string]interface{}{
+						}, map[string]any{
+							"hostPath": map[string]any{
 								"path": "/etc/cacert",
 							},
 							"name": "cacert",

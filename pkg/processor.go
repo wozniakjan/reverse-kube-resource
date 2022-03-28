@@ -47,7 +47,7 @@ type processingContext struct {
 	path   []pathElement
 	un     *unstructured.Unstructured
 	ro     runtime.Object
-	o      interface{}
+	o      any
 	name   string
 	parent reflect.Kind
 
@@ -65,7 +65,7 @@ func sanitize(name string) string {
 	return strcase.ToLowerCamel(name)
 }
 
-func (pc processingContext) new(path pathElement, name string, o interface{}, parent reflect.Kind) processingContext {
+func (pc processingContext) new(path pathElement, name string, o any, parent reflect.Kind) processingContext {
 	pc2 := processingContext{}
 	pc2.path = make([]pathElement, len(pc.path))
 	copy(pc2.path, pc.path)
@@ -90,12 +90,12 @@ func nameImport(kImportPath string) string {
 	return s[len(s)-1]
 }
 
-func missing(un interface{}, path []pathElement) bool {
+func missing(un any, path []pathElement) bool {
 	if len(path) == 0 {
 		return false
 	}
 	if path[0].kind == "map" {
-		if next, ok := un.(map[string]interface{}); ok {
+		if next, ok := un.(map[string]any); ok {
 			val, exists := next[path[0].name]
 			if !exists {
 				return true
@@ -103,7 +103,7 @@ func missing(un interface{}, path []pathElement) bool {
 			return missing(val, path[1:])
 		}
 	} else if path[0].kind == "slice" {
-		if next, ok := un.([]interface{}); ok {
+		if next, ok := un.([]any); ok {
 			if len(next) > path[0].index {
 				val := next[path[0].index]
 				return missing(val, path[1:])
@@ -255,8 +255,8 @@ func unstructuredMetaKeep(pc processingContext, name string) bool {
 func processUnstructured(pc processingContext, onlyMeta bool) {
 	last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 	switch o := pc.o.(type) {
-	case map[string]interface{}:
-		last.lines[len(last.lines)-1] += "map[string]interface{}{"
+	case map[string]any:
+		last.lines[len(last.lines)-1] += "map[string]any{"
 		keys := make([]string, 0, len(o))
 		for k, _ := range o {
 			pc2 := pc.new(pathElement{name: k}, "", o[k], reflect.Map)
@@ -274,8 +274,8 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 			}
 		}
 		last.lines = append(last.lines, fmt.Sprintf("},"))
-	case []interface{}:
-		last.lines[len(last.lines)-1] += "[]interface{}{\n"
+	case []any:
+		last.lines[len(last.lines)-1] += "[]any{\n"
 		for _, e := range o {
 			pc2 := pc.new(pathElement{}, "", e, reflect.Slice)
 			processUnstructured(pc2, onlyMeta)
@@ -405,7 +405,7 @@ func processKubernetes(pc processingContext) {
 	return
 }
 
-func helperLine(pc processingContext, typeName string, kind reflect.Kind, ifc interface{}) (string, string) {
+func helperLine(pc processingContext, typeName string, kind reflect.Kind, ifc any) (string, string) {
 	name := sanitize(fmt.Sprintf("%v-%v-%v-%v", pc.un.GetName(), pc.un.GetKind(), pc.name, ifc))
 	var line string
 	if kind == reflect.String {

@@ -201,10 +201,10 @@ var (
 
 	// Unstructured "service-catalog-addons-service-catalog-ui"
 	serviceCatalogAddonsServiceCatalogUiUnstructuredDestinationRule = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "networking.istio.io/v1alpha3",
 			"kind":       "DestinationRule",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "service-catalog-addons-service-catalog-ui",
 			},
 		},
@@ -212,10 +212,10 @@ var (
 
 	// Unstructured "service-catalog-addons-service-binding-usage-controller"
 	serviceCatalogAddonsServiceBindingUsageControllerUnstructuredPeerAuthentication = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "security.istio.io/v1beta1",
 			"kind":       "PeerAuthentication",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "service-catalog-addons-service-binding-usage-controller",
 			},
 		},
@@ -223,10 +223,17 @@ var (
 
 	// Unstructured "service-catalog-addons-service-binding-usage-controller"
 	serviceCatalogAddonsServiceBindingUsageControllerUnstructuredServiceMonitor = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "monitoring.coreos.com/v1",
 			"kind":       "ServiceMonitor",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
+					"app":        "service-catalog-addons-service-binding-usage-controller",
+					"chart":      "service-binding-usage-controller-0.1.0",
+					"heritage":   "Helm",
+					"prometheus": "monitoring",
+					"release":    "service-catalog-addons",
+				},
 				"name": "service-catalog-addons-service-binding-usage-controller",
 			},
 		},
@@ -234,10 +241,10 @@ var (
 
 	// Unstructured "deployment"
 	deploymentUnstructuredUsageKind = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "servicecatalog.kyma-project.io/v1alpha1",
 			"kind":       "UsageKind",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "deployment",
 			},
 		},
@@ -245,10 +252,16 @@ var (
 
 	// Unstructured "service-catalog-addons-service-catalog-ui-catalog"
 	serviceCatalogAddonsServiceCatalogUiCatalogUnstructuredVirtualService = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "networking.istio.io/v1alpha3",
 			"kind":       "VirtualService",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
+					"app":      "service-catalog-ui",
+					"chart":    "service-catalog-ui-0.1.0",
+					"heritage": "Helm",
+					"release":  "service-catalog-addons",
+				},
 				"name": "service-catalog-addons-service-catalog-ui-catalog",
 			},
 		},

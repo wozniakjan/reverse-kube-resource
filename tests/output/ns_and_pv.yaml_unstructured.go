@@ -7,36 +7,36 @@ import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 var (
 	// Unstructured "test2"
 	test2UnstructuredNamespace = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "v1",
 			"kind":       "Namespace",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "test2",
 			},
-			"spec":   map[string]interface{}{},
-			"status": map[string]interface{}{},
+			"spec":   map[string]any{},
+			"status": map[string]any{},
 		},
 	}
 
 	// Unstructured "pv0004"
 	pv0004UnstructuredPersistentVolume = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "v1",
 			"kind":       "PersistentVolume",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "pv0004",
 			},
-			"spec": map[string]interface{}{
-				"accessModes": []interface{}{
+			"spec": map[string]any{
+				"accessModes": []any{
 					"ReadWriteOnce",
 				},
-				"capacity": map[string]interface{}{
+				"capacity": map[string]any{
 					"storage": "5Gi",
 				},
-				"mountOptions": []interface{}{
+				"mountOptions": []any{
 					"hard", "nfsvers=4.1",
 				},
-				"nfs": map[string]interface{}{
+				"nfs": map[string]any{
 					"path":   "/tmp",
 					"server": "172.17.0.2",
 				},

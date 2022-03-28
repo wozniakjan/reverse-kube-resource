@@ -5,51 +5,51 @@ package examples
 import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 var clusterRoleUnstructuredClusterRole = v1unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"apiVersion": "rbac.authorization.k8s.io/v1",
 		"kind":       "ClusterRole",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "cluster-role",
 		},
-		"rules": []interface{}{
-			map[string]interface{}{
-				"apiGroups": []interface{}{
+		"rules": []any{
+			map[string]any{
+				"apiGroups": []any{
 					"",
 				},
-				"resources": []interface{}{
+				"resources": []any{
 					"persistentvolumes",
 				},
-				"verbs": []interface{}{
+				"verbs": []any{
 					"get", "list", "watch", "patch",
 				},
-			}, map[string]interface{}{
-				"apiGroups": []interface{}{
+			}, map[string]any{
+				"apiGroups": []any{
 					"storage.k8s.io",
 				},
-				"resources": []interface{}{
+				"resources": []any{
 					"csinodes",
 				},
-				"verbs": []interface{}{
+				"verbs": []any{
 					"get", "list", "watch",
 				},
-			}, map[string]interface{}{
-				"apiGroups": []interface{}{
+			}, map[string]any{
+				"apiGroups": []any{
 					"storage.k8s.io",
 				},
-				"resources": []interface{}{
+				"resources": []any{
 					"volumeattachments",
 				},
-				"verbs": []interface{}{
+				"verbs": []any{
 					"get", "list", "watch", "patch",
 				},
-			}, map[string]interface{}{
-				"apiGroups": []interface{}{
+			}, map[string]any{
+				"apiGroups": []any{
 					"storage.k8s.io",
 				},
-				"resources": []interface{}{
+				"resources": []any{
 					"volumeattachments/status",
 				},
-				"verbs": []interface{}{
+				"verbs": []any{
 					"patch",
 				},
 			},

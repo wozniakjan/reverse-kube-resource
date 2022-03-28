@@ -616,16 +616,16 @@ var (
 
 	// Unstructured "service-catalog-addons-service-catalog-ui"
 	serviceCatalogAddonsServiceCatalogUiUnstructuredDestinationRule = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "networking.istio.io/v1alpha3",
 			"kind":       "DestinationRule",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "service-catalog-addons-service-catalog-ui",
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"host": "service-catalog-addons-service-catalog-ui.kyma-system.svc.cluster.local",
-				"trafficPolicy": map[string]interface{}{
-					"tls": map[string]interface{}{
+				"trafficPolicy": map[string]any{
+					"tls": map[string]any{
 						"mode": "DISABLE",
 					},
 				},
@@ -635,18 +635,18 @@ var (
 
 	// Unstructured "service-catalog-addons-service-binding-usage-controller"
 	serviceCatalogAddonsServiceBindingUsageControllerUnstructuredPeerAuthentication = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "security.istio.io/v1beta1",
 			"kind":       "PeerAuthentication",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "service-catalog-addons-service-binding-usage-controller",
 			},
-			"spec": map[string]interface{}{
-				"mtls": map[string]interface{}{
+			"spec": map[string]any{
+				"mtls": map[string]any{
 					"mode": "PERMISSIVE",
 				},
-				"selector": map[string]interface{}{
-					"matchLabels": map[string]interface{}{
+				"selector": map[string]any{
+					"matchLabels": map[string]any{
 						"app": "service-catalog-addons-service-binding-usage-controller",
 					},
 				},
@@ -656,11 +656,11 @@ var (
 
 	// Unstructured "service-catalog-addons-service-binding-usage-controller"
 	serviceCatalogAddonsServiceBindingUsageControllerUnstructuredServiceMonitor = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "monitoring.coreos.com/v1",
 			"kind":       "ServiceMonitor",
-			"metadata": map[string]interface{}{
-				"labels": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
 					"app":        "service-catalog-addons-service-binding-usage-controller",
 					"chart":      "service-binding-usage-controller-0.1.0",
 					"heritage":   "Helm",
@@ -669,14 +669,14 @@ var (
 				},
 				"name": "service-catalog-addons-service-binding-usage-controller",
 			},
-			"spec": map[string]interface{}{
-				"endpoints": []interface{}{
-					map[string]interface{}{
-						"metricRelabelings": []interface{}{
-							map[string]interface{}{
+			"spec": map[string]any{
+				"endpoints": []any{
+					map[string]any{
+						"metricRelabelings": []any{
+							map[string]any{
 								"action": "keep",
 								"regex":  "^(controller_runtime_reconcile_latency_sum|controller_runtime_reconcile_latency_count|controller_runtime_reconcile_queue_length|controller_runtime_reconcile_errors_total|go_gc_duration_seconds|go_goroutines|go_memstats_alloc_bytes|go_memstats_heap_alloc_bytes|go_memstats_heap_inuse_bytes|go_memstats_heap_sys_bytes|go_memstats_stack_inuse_bytes|go_threads|process_cpu_seconds_total|process_max_fds|process_open_fds|process_resident_memory_bytes|process_start_time_seconds|process_virtual_memory_bytes)$",
-								"sourceLabels": []interface{}{
+								"sourceLabels": []any{
 									"__name__",
 								},
 							},
@@ -684,13 +684,13 @@ var (
 						"port": "http-metrics",
 					},
 				},
-				"namespaceSelector": map[string]interface{}{
-					"matchNames": []interface{}{
+				"namespaceSelector": map[string]any{
+					"matchNames": []any{
 						"kyma-system",
 					},
 				},
-				"selector": map[string]interface{}{
-					"matchLabels": map[string]interface{}{
+				"selector": map[string]any{
+					"matchLabels": map[string]any{
 						"app": "service-catalog-addons-service-binding-usage-controller",
 					},
 				},
@@ -700,16 +700,16 @@ var (
 
 	// Unstructured "deployment"
 	deploymentUnstructuredUsageKind = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "servicecatalog.kyma-project.io/v1alpha1",
 			"kind":       "UsageKind",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "deployment",
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"displayName": "Deployment",
 				"labelsPath":  "spec.template.metadata.labels",
-				"resource": map[string]interface{}{
+				"resource": map[string]any{
 					"group":   "apps",
 					"kind":    "deployment",
 					"version": "v1",
@@ -720,11 +720,11 @@ var (
 
 	// Unstructured "service-catalog-addons-service-catalog-ui-catalog"
 	serviceCatalogAddonsServiceCatalogUiCatalogUnstructuredVirtualService = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "networking.istio.io/v1alpha3",
 			"kind":       "VirtualService",
-			"metadata": map[string]interface{}{
-				"labels": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
 					"app":      "service-catalog-ui",
 					"chart":    "service-catalog-ui-0.1.0",
 					"heritage": "Helm",
@@ -732,27 +732,27 @@ var (
 				},
 				"name": "service-catalog-addons-service-catalog-ui-catalog",
 			},
-			"spec": map[string]interface{}{
-				"gateways": []interface{}{
+			"spec": map[string]any{
+				"gateways": []any{
 					"kyma-gateway",
 				},
-				"hosts": []interface{}{
+				"hosts": []any{
 					"catalog.ed200f3.dev.kyma.ondemand.com",
 				},
-				"http": []interface{}{
-					map[string]interface{}{
-						"match": []interface{}{
-							map[string]interface{}{
-								"uri": map[string]interface{}{
+				"http": []any{
+					map[string]any{
+						"match": []any{
+							map[string]any{
+								"uri": map[string]any{
 									"regex": "/.*",
 								},
 							},
 						},
-						"route": []interface{}{
-							map[string]interface{}{
-								"destination": map[string]interface{}{
+						"route": []any{
+							map[string]any{
+								"destination": map[string]any{
 									"host": "service-catalog-addons-service-catalog-ui",
-									"port": map[string]interface{}{
+									"port": map[string]any{
 										"number": 80,
 									},
 								},

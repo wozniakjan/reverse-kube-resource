@@ -7,10 +7,10 @@ import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 var (
 	// Unstructured "csi-cinder-controller-sa"
 	csiCinderControllerSaUnstructuredServiceAccount = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "v1",
 			"kind":       "ServiceAccount",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      "csi-cinder-controller-sa",
 				"namespace": "kube-system",
 			},
@@ -19,10 +19,10 @@ var (
 
 	// Unstructured "csi-cinder-node-sa"
 	csiCinderNodeSaUnstructuredServiceAccount = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "v1",
 			"kind":       "ServiceAccount",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      "csi-cinder-node-sa",
 				"namespace": "kube-system",
 			},
@@ -31,11 +31,11 @@ var (
 
 	// Unstructured "csi-cinder-sc-delete"
 	csiCinderScDeleteUnstructuredStorageClass = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"allowVolumeExpansion": true,
 			"apiVersion":           "storage.k8s.io/v1",
 			"kind":                 "StorageClass",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-cinder-sc-delete",
 			},
 			"provisioner":   "cinder.csi.openstack.org",
@@ -45,11 +45,11 @@ var (
 
 	// Unstructured "csi-cinder-sc-retain"
 	csiCinderScRetainUnstructuredStorageClass = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"allowVolumeExpansion": true,
 			"apiVersion":           "storage.k8s.io/v1",
 			"kind":                 "StorageClass",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-cinder-sc-retain",
 			},
 			"provisioner":   "cinder.csi.openstack.org",
@@ -59,51 +59,51 @@ var (
 
 	// Unstructured "csi-attacher-role"
 	csiAttacherRoleUnstructuredClusterRole = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRole",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-attacher-role",
 			},
-			"rules": []interface{}{
-				map[string]interface{}{
-					"apiGroups": []interface{}{
+			"rules": []any{
+				map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"persistentvolumes",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch", "patch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"csinodes",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumeattachments",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch", "patch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumeattachments/status",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"patch",
 					},
 				},
@@ -113,91 +113,91 @@ var (
 
 	// Unstructured "csi-provisioner-role"
 	csiProvisionerRoleUnstructuredClusterRole = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRole",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-provisioner-role",
 			},
-			"rules": []interface{}{
-				map[string]interface{}{
-					"apiGroups": []interface{}{
+			"rules": []any{
+				map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"persistentvolumes",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch", "create", "delete",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"persistentvolumeclaims",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch", "update",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"storageclasses",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"nodes",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"csinodes",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"events",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"list", "watch", "create", "update", "patch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"snapshot.storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumesnapshots",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"snapshot.storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumesnapshotcontents",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list",
 					},
 				},
@@ -207,51 +207,51 @@ var (
 
 	// Unstructured "csi-snapshotter-role"
 	csiSnapshotterRoleUnstructuredClusterRole = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRole",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-snapshotter-role",
 			},
-			"rules": []interface{}{
-				map[string]interface{}{
-					"apiGroups": []interface{}{
+			"rules": []any{
+				map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"events",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"list", "watch", "create", "update", "patch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"snapshot.storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumesnapshotclasses",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"snapshot.storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumesnapshotcontents",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"create", "get", "list", "watch", "update", "delete",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"snapshot.storage.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"volumesnapshotcontents/status",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"update",
 					},
 				},
@@ -261,61 +261,61 @@ var (
 
 	// Unstructured "csi-resizer-role"
 	csiResizerRoleUnstructuredClusterRole = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRole",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-resizer-role",
 			},
-			"rules": []interface{}{
-				map[string]interface{}{
-					"apiGroups": []interface{}{
+			"rules": []any{
+				map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"persistentvolumes",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch", "patch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"persistentvolumeclaims",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"pods",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"persistentvolumeclaims/status",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"patch",
 					},
-				}, map[string]interface{}{
-					"apiGroups": []interface{}{
+				}, map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"events",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"list", "watch", "create", "update", "patch",
 					},
 				},
@@ -325,21 +325,21 @@ var (
 
 	// Unstructured "csi-nodeplugin-role"
 	csiNodepluginRoleUnstructuredClusterRole = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRole",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-nodeplugin-role",
 			},
-			"rules": []interface{}{
-				map[string]interface{}{
-					"apiGroups": []interface{}{
+			"rules": []any{
+				map[string]any{
+					"apiGroups": []any{
 						"",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"events",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "list", "watch", "create", "update", "patch",
 					},
 				},
@@ -349,19 +349,19 @@ var (
 
 	// Unstructured "csi-attacher-binding"
 	csiAttacherBindingUnstructuredClusterRoleBinding = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRoleBinding",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-attacher-binding",
 			},
-			"roleRef": map[string]interface{}{
+			"roleRef": map[string]any{
 				"apiGroup": "rbac.authorization.k8s.io",
 				"kind":     "ClusterRole",
 				"name":     "csi-attacher-role",
 			},
-			"subjects": []interface{}{
-				map[string]interface{}{
+			"subjects": []any{
+				map[string]any{
 					"kind":      "ServiceAccount",
 					"name":      "csi-cinder-controller-sa",
 					"namespace": "kube-system",
@@ -372,19 +372,19 @@ var (
 
 	// Unstructured "csi-provisioner-binding"
 	csiProvisionerBindingUnstructuredClusterRoleBinding = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRoleBinding",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-provisioner-binding",
 			},
-			"roleRef": map[string]interface{}{
+			"roleRef": map[string]any{
 				"apiGroup": "rbac.authorization.k8s.io",
 				"kind":     "ClusterRole",
 				"name":     "csi-provisioner-role",
 			},
-			"subjects": []interface{}{
-				map[string]interface{}{
+			"subjects": []any{
+				map[string]any{
 					"kind":      "ServiceAccount",
 					"name":      "csi-cinder-controller-sa",
 					"namespace": "kube-system",
@@ -395,19 +395,19 @@ var (
 
 	// Unstructured "csi-snapshotter-binding"
 	csiSnapshotterBindingUnstructuredClusterRoleBinding = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRoleBinding",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-snapshotter-binding",
 			},
-			"roleRef": map[string]interface{}{
+			"roleRef": map[string]any{
 				"apiGroup": "rbac.authorization.k8s.io",
 				"kind":     "ClusterRole",
 				"name":     "csi-snapshotter-role",
 			},
-			"subjects": []interface{}{
-				map[string]interface{}{
+			"subjects": []any{
+				map[string]any{
 					"kind":      "ServiceAccount",
 					"name":      "csi-cinder-controller-sa",
 					"namespace": "kube-system",
@@ -418,19 +418,19 @@ var (
 
 	// Unstructured "csi-resizer-binding"
 	csiResizerBindingUnstructuredClusterRoleBinding = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRoleBinding",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-resizer-binding",
 			},
-			"roleRef": map[string]interface{}{
+			"roleRef": map[string]any{
 				"apiGroup": "rbac.authorization.k8s.io",
 				"kind":     "ClusterRole",
 				"name":     "csi-resizer-role",
 			},
-			"subjects": []interface{}{
-				map[string]interface{}{
+			"subjects": []any{
+				map[string]any{
 					"kind":      "ServiceAccount",
 					"name":      "csi-cinder-controller-sa",
 					"namespace": "kube-system",
@@ -441,19 +441,19 @@ var (
 
 	// Unstructured "csi-nodeplugin-binding"
 	csiNodepluginBindingUnstructuredClusterRoleBinding = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "ClusterRoleBinding",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "csi-nodeplugin-binding",
 			},
-			"roleRef": map[string]interface{}{
+			"roleRef": map[string]any{
 				"apiGroup": "rbac.authorization.k8s.io",
 				"kind":     "ClusterRole",
 				"name":     "csi-nodeplugin-role",
 			},
-			"subjects": []interface{}{
-				map[string]interface{}{
+			"subjects": []any{
+				map[string]any{
 					"kind":      "ServiceAccount",
 					"name":      "csi-cinder-node-sa",
 					"namespace": "kube-system",
@@ -464,22 +464,22 @@ var (
 
 	// Unstructured "external-resizer-cfg"
 	externalResizerCfgUnstructuredRole = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "Role",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      "external-resizer-cfg",
 				"namespace": "kube-system",
 			},
-			"rules": []interface{}{
-				map[string]interface{}{
-					"apiGroups": []interface{}{
+			"rules": []any{
+				map[string]any{
+					"apiGroups": []any{
 						"coordination.k8s.io",
 					},
-					"resources": []interface{}{
+					"resources": []any{
 						"leases",
 					},
-					"verbs": []interface{}{
+					"verbs": []any{
 						"get", "watch", "list", "delete", "update", "create",
 					},
 				},
@@ -489,20 +489,20 @@ var (
 
 	// Unstructured "csi-resizer-role-cfg"
 	csiResizerRoleCfgUnstructuredRoleBinding = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "rbac.authorization.k8s.io/v1",
 			"kind":       "RoleBinding",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      "csi-resizer-role-cfg",
 				"namespace": "kube-system",
 			},
-			"roleRef": map[string]interface{}{
+			"roleRef": map[string]any{
 				"apiGroup": "rbac.authorization.k8s.io",
 				"kind":     "Role",
 				"name":     "external-resizer-cfg",
 			},
-			"subjects": []interface{}{
-				map[string]interface{}{
+			"subjects": []any{
+				map[string]any{
 					"kind":      "ServiceAccount",
 					"name":      "csi-cinder-controller-sa",
 					"namespace": "kube-system",
@@ -513,11 +513,11 @@ var (
 
 	// Unstructured "openstack-cinder-csi-controllerplugin"
 	openstackCinderCsiControllerpluginUnstructuredService = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "v1",
 			"kind":       "Service",
-			"metadata": map[string]interface{}{
-				"labels": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
 					"app":       "openstack-cinder-csi",
 					"chart":     "openstack-cinder-csi-1.3.8",
 					"component": "controllerplugin",
@@ -526,7 +526,7 @@ var (
 				},
 				"name": "openstack-cinder-csi-controllerplugin",
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"clusterIP": "None",
 			},
 		},
@@ -534,11 +534,11 @@ var (
 
 	// Unstructured "openstack-cinder-csi-nodeplugin"
 	openstackCinderCsiNodepluginUnstructuredDaemonSet = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "apps/v1",
 			"kind":       "DaemonSet",
-			"metadata": map[string]interface{}{
-				"labels": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
 					"app":       "openstack-cinder-csi",
 					"chart":     "openstack-cinder-csi-1.3.8",
 					"component": "nodeplugin",
@@ -547,17 +547,17 @@ var (
 				},
 				"name": "openstack-cinder-csi-nodeplugin",
 			},
-			"spec": map[string]interface{}{
-				"selector": map[string]interface{}{
-					"matchLabels": map[string]interface{}{
+			"spec": map[string]any{
+				"selector": map[string]any{
+					"matchLabels": map[string]any{
 						"app":       "openstack-cinder-csi",
 						"component": "nodeplugin",
 						"release":   "cinder-csi",
 					},
 				},
-				"template": map[string]interface{}{
-					"metadata": map[string]interface{}{
-						"labels": map[string]interface{}{
+				"template": map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any{
 							"app":       "openstack-cinder-csi",
 							"chart":     "openstack-cinder-csi-1.3.8",
 							"component": "nodeplugin",
@@ -565,23 +565,23 @@ var (
 							"release":   "cinder-csi",
 						},
 					},
-					"spec": map[string]interface{}{
-						"containers": []interface{}{
-							map[string]interface{}{
-								"args": []interface{}{
+					"spec": map[string]any{
+						"containers": []any{
+							map[string]any{
+								"args": []any{
 									"--csi-address=$(ADDRESS)", "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name":  "ADDRESS",
 										"value": "/csi/csi.sock",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name":  "DRIVER_REG_SOCK_PATH",
 										"value": "/var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name": "KUBE_NODE_NAME",
-										"valueFrom": map[string]interface{}{
-											"fieldRef": map[string]interface{}{
+										"valueFrom": map[string]any{
+											"fieldRef": map[string]any{
 												"fieldPath": "spec.nodeName",
 											},
 										},
@@ -589,63 +589,63 @@ var (
 								},
 								"image":           "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0",
 								"imagePullPolicy": "IfNotPresent",
-								"lifecycle": map[string]interface{}{
-									"preStop": map[string]interface{}{
-										"exec": map[string]interface{}{
-											"command": []interface{}{
+								"lifecycle": map[string]any{
+									"preStop": map[string]any{
+										"exec": map[string]any{
+											"command": []any{
 												"/bin/sh", "-c", "rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock",
 											},
 										},
 									},
 								},
 								"name": "node-driver-registrar",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/csi",
 										"name":      "socket-dir",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath": "/registration",
 										"name":      "registration-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"--csi-address=/csi/csi.sock",
 								},
 								"image":           "k8s.gcr.io/sig-storage/livenessprobe:v2.1.0",
 								"imagePullPolicy": "IfNotPresent",
 								"name":            "liveness-probe",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/csi",
 										"name":      "socket-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"/bin/cinder-csi-plugin", "--nodeid=$(NODE_ID)", "--endpoint=$(CSI_ENDPOINT)", "--cloud-config=$(CLOUD_CONFIG)",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name": "NODE_ID",
-										"valueFrom": map[string]interface{}{
-											"fieldRef": map[string]interface{}{
+										"valueFrom": map[string]any{
+											"fieldRef": map[string]any{
 												"fieldPath": "spec.nodeName",
 											},
 										},
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name":  "CSI_ENDPOINT",
 										"value": "unix://csi/csi.sock",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name":  "CLOUD_CONFIG",
 										"value": "/etc/kubernetes/cloud-config",
 									},
 								},
 								"image":           "docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0",
 								"imagePullPolicy": "IfNotPresent",
-								"livenessProbe": map[string]interface{}{
+								"livenessProbe": map[string]any{
 									"failureThreshold": 5,
-									"httpGet": map[string]interface{}{
+									"httpGet": map[string]any{
 										"path": "/healthz",
 										"port": "healthz",
 									},
@@ -654,39 +654,39 @@ var (
 									"timeoutSeconds":      10,
 								},
 								"name": "cinder-csi-plugin",
-								"ports": []interface{}{
-									map[string]interface{}{
+								"ports": []any{
+									map[string]any{
 										"containerPort": 9808,
 										"name":          "healthz",
 										"protocol":      "TCP",
 									},
 								},
-								"securityContext": map[string]interface{}{
+								"securityContext": map[string]any{
 									"allowPrivilegeEscalation": true,
-									"capabilities": map[string]interface{}{
-										"add": []interface{}{
+									"capabilities": map[string]any{
+										"add": []any{
 											"SYS_ADMIN",
 										},
 									},
 									"privileged": true,
 								},
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/csi",
 										"name":      "socket-dir",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath":        "/var/lib/kubelet",
 										"mountPropagation": "Bidirectional",
 										"name":             "kubelet-dir",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath":        "/dev",
 										"mountPropagation": "HostToContainer",
 										"name":             "pods-probe-dir",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath": "/etc/cacert",
 										"name":      "cacert",
 										"readOnly":  true,
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath": "/etc/kubernetes",
 										"name":      "cloud-config",
 										"readOnly":  true,
@@ -696,43 +696,43 @@ var (
 						},
 						"hostNetwork":    true,
 						"serviceAccount": "csi-cinder-node-sa",
-						"tolerations": []interface{}{
-							map[string]interface{}{
+						"tolerations": []any{
+							map[string]any{
 								"operator": "Exists",
 							},
 						},
-						"volumes": []interface{}{
-							map[string]interface{}{
-								"hostPath": map[string]interface{}{
+						"volumes": []any{
+							map[string]any{
+								"hostPath": map[string]any{
 									"path": "/var/lib/kubelet/plugins/cinder.csi.openstack.org",
 									"type": "DirectoryOrCreate",
 								},
 								"name": "socket-dir",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/var/lib/kubelet/plugins_registry/",
 									"type": "Directory",
 								},
 								"name": "registration-dir",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/var/lib/kubelet",
 									"type": "Directory",
 								},
 								"name": "kubelet-dir",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/dev",
 									"type": "Directory",
 								},
 								"name": "pods-probe-dir",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/etc/kubernetes",
 								},
 								"name": "cloud-config",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/etc/cacert",
 								},
 								"name": "cacert",
@@ -746,11 +746,11 @@ var (
 
 	// Unstructured "openstack-cinder-csi-controllerplugin"
 	openstackCinderCsiControllerpluginUnstructuredStatefulSet = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "apps/v1",
 			"kind":       "StatefulSet",
-			"metadata": map[string]interface{}{
-				"labels": map[string]interface{}{
+			"metadata": map[string]any{
+				"labels": map[string]any{
 					"app":       "openstack-cinder-csi",
 					"chart":     "openstack-cinder-csi-1.3.8",
 					"component": "controllerplugin",
@@ -759,19 +759,19 @@ var (
 				},
 				"name": "openstack-cinder-csi-controllerplugin",
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"replicas": 1,
-				"selector": map[string]interface{}{
-					"matchLabels": map[string]interface{}{
+				"selector": map[string]any{
+					"matchLabels": map[string]any{
 						"app":       "openstack-cinder-csi",
 						"component": "controllerplugin",
 						"release":   "cinder-csi",
 					},
 				},
 				"serviceName": "openstack-cinder-csi-controllerplugin",
-				"template": map[string]interface{}{
-					"metadata": map[string]interface{}{
-						"labels": map[string]interface{}{
+				"template": map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any{
 							"app":       "openstack-cinder-csi",
 							"chart":     "openstack-cinder-csi-1.3.8",
 							"component": "controllerplugin",
@@ -779,14 +779,14 @@ var (
 							"release":   "cinder-csi",
 						},
 					},
-					"spec": map[string]interface{}{
-						"containers": []interface{}{
-							map[string]interface{}{
-								"args": []interface{}{
+					"spec": map[string]any{
+						"containers": []any{
+							map[string]any{
+								"args": []any{
 									"--csi-address=$(ADDRESS)", "--timeout=3m",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name":  "ADDRESS",
 										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
 									},
@@ -794,18 +794,18 @@ var (
 								"image":           "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0",
 								"imagePullPolicy": "IfNotPresent",
 								"name":            "csi-attacher",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
 										"name":      "socket-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"--csi-address=$(ADDRESS)", "--timeout=3m", "--default-fstype=ext4", "--feature-gates=Topology=true", "--extra-create-metadata",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name":  "ADDRESS",
 										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
 									},
@@ -813,18 +813,18 @@ var (
 								"image":           "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1",
 								"imagePullPolicy": "IfNotPresent",
 								"name":            "csi-provisioner",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
 										"name":      "socket-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"--csi-address=$(ADDRESS)", "--timeout=3m",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name":  "ADDRESS",
 										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
 									},
@@ -832,18 +832,18 @@ var (
 								"image":           "k8s.gcr.io/sig-storage/csi-snapshotter:v2.1.3",
 								"imagePullPolicy": "IfNotPresent",
 								"name":            "csi-snapshotter",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
 										"name":      "socket-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"--csi-address=$(ADDRESS)", "--timeout=3m", "--handle-volume-inuse-error=false",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name":  "ADDRESS",
 										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
 									},
@@ -851,18 +851,18 @@ var (
 								"image":           "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0",
 								"imagePullPolicy": "IfNotPresent",
 								"name":            "csi-resizer",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
 										"name":      "socket-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"--csi-address=$(ADDRESS)",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name":  "ADDRESS",
 										"value": "/var/lib/csi/sockets/pluginproxy/csi.sock",
 									},
@@ -870,40 +870,40 @@ var (
 								"image":           "k8s.gcr.io/sig-storage/livenessprobe:v2.1.0",
 								"imagePullPolicy": "IfNotPresent",
 								"name":            "liveness-probe",
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/var/lib/csi/sockets/pluginproxy/",
 										"name":      "socket-dir",
 									},
 								},
-							}, map[string]interface{}{
-								"args": []interface{}{
+							}, map[string]any{
+								"args": []any{
 									"/bin/cinder-csi-plugin", "--nodeid=$(NODE_ID)", "--endpoint=$(CSI_ENDPOINT)", "--cloud-config=$(CLOUD_CONFIG)", "--cluster=$(CLUSTER_NAME)",
 								},
-								"env": []interface{}{
-									map[string]interface{}{
+								"env": []any{
+									map[string]any{
 										"name": "NODE_ID",
-										"valueFrom": map[string]interface{}{
-											"fieldRef": map[string]interface{}{
+										"valueFrom": map[string]any{
+											"fieldRef": map[string]any{
 												"fieldPath": "spec.nodeName",
 											},
 										},
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name":  "CSI_ENDPOINT",
 										"value": "unix://csi/csi.sock",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name":  "CLOUD_CONFIG",
 										"value": "/etc/kubernetes/cloud-config",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"name":  "CLUSTER_NAME",
 										"value": "kubernetes",
 									},
 								},
 								"image":           "docker.io/k8scloudprovider/cinder-csi-plugin:v1.21.0",
 								"imagePullPolicy": "IfNotPresent",
-								"livenessProbe": map[string]interface{}{
+								"livenessProbe": map[string]any{
 									"failureThreshold": 5,
-									"httpGet": map[string]interface{}{
+									"httpGet": map[string]any{
 										"path": "/healthz",
 										"port": "healthz",
 									},
@@ -912,22 +912,22 @@ var (
 									"timeoutSeconds":      10,
 								},
 								"name": "cinder-csi-plugin",
-								"ports": []interface{}{
-									map[string]interface{}{
+								"ports": []any{
+									map[string]any{
 										"containerPort": 9808,
 										"name":          "healthz",
 										"protocol":      "TCP",
 									},
 								},
-								"volumeMounts": []interface{}{
-									map[string]interface{}{
+								"volumeMounts": []any{
+									map[string]any{
 										"mountPath": "/csi",
 										"name":      "socket-dir",
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath": "/etc/cacert",
 										"name":      "cacert",
 										"readOnly":  true,
-									}, map[string]interface{}{
+									}, map[string]any{
 										"mountPath": "/etc/kubernetes",
 										"name":      "cloud-config",
 										"readOnly":  true,
@@ -936,16 +936,16 @@ var (
 							},
 						},
 						"serviceAccount": "csi-cinder-controller-sa",
-						"volumes": []interface{}{
-							map[string]interface{}{
+						"volumes": []any{
+							map[string]any{
 								"name": "socket-dir",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/etc/kubernetes",
 								},
 								"name": "cloud-config",
-							}, map[string]interface{}{
-								"hostPath": map[string]interface{}{
+							}, map[string]any{
+								"hostPath": map[string]any{
 									"path": "/etc/cacert",
 								},
 								"name": "cacert",
@@ -959,16 +959,16 @@ var (
 
 	// Unstructured "cinder.csi.openstack.org"
 	cinderCsiOpenstackOrgUnstructuredCSIDriver = v1unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "storage.k8s.io/v1",
 			"kind":       "CSIDriver",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "cinder.csi.openstack.org",
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"attachRequired": true,
 				"podInfoOnMount": true,
-				"volumeLifecycleModes": []interface{}{
+				"volumeLifecycleModes": []any{
 					"Persistent", "Ephemeral",
 				},
 			},

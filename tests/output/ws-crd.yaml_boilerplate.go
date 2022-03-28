@@ -9,13 +9,13 @@ package examples
 import v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 var exampleFooUnstructuredFoo = v1unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"apiVersion": "samplecontroller.k8s.io/v1alpha1",
 		"kind":       "Foo",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "example-foo",
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"deploymentName": "example-foo",
 			"replicas":       1,
 		},

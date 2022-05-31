@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/iancoleman/strcase v0.2.0
-	golang.org/x/tools v0.1.9
+	golang.org/x/tools v0.1.10
 	k8s.io/api v0.23.3
 	k8s.io/apimachinery v0.23.3
 	k8s.io/client-go v0.23.3

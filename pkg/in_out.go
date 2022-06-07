@@ -103,7 +103,7 @@ func Print(pkg, boilerplate string, imports []Import, vars []RawVar, kubermatic 
 	printLines(vars, &buf, kubermatic)
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
-		fmt.Printf("%v", string(buf.Bytes()))
+		fmt.Printf("%v", buf.String())
 		checkFatal(err)
 	}
 	fmt.Printf("%v", string(formatted))
@@ -113,7 +113,7 @@ func readFile(path string) (all [][]byte) {
 	data, err := os.ReadFile(path)
 	checkFatal(err)
 	split := strings.Split(string(data), "---")
-	for i, _ := range split {
+	for i := range split {
 		if len(split[i]) != 0 {
 			all = append(all, []byte(split[i]))
 		}

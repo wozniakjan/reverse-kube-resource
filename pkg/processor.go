@@ -108,7 +108,6 @@ func missing(un any, path []pathElement) bool {
 				val := next[path[0].index]
 				return missing(val, path[1:])
 			}
-		} else {
 		}
 	}
 	return true
@@ -136,7 +135,6 @@ func processMapKey(pc processingContext) {
 	} else {
 		last.lines = append(last.lines, fmt.Sprintf("%v%v", ptrDeref, ve.Interface()))
 	}
-	return
 }
 
 func processMapValue(pc processingContext) {
@@ -170,7 +168,6 @@ func processMapValue(pc processingContext) {
 			last.lines = append(last.lines, fmt.Sprintf("%v%v", ptrDeref, ve.Interface()))
 		}
 	}
-	return
 }
 
 func processKubermatic(pc processingContext) {
@@ -187,10 +184,10 @@ func processKubermatic(pc processingContext) {
 	last.lines = append(last.lines, fmt.Sprintf("return func() (string, reconciling.%vCreator) {", te.Name()))
 	last.lines = append(last.lines, fmt.Sprintf("t := %v.DeepCopy()", varName))
 	last.lines = append(last.lines, fmt.Sprintf("return t.Name, func(o *%v) (*%v, error) {", typeName, typeName))
-	last.lines = append(last.lines, fmt.Sprintf("return t, nil"))
-	last.lines = append(last.lines, fmt.Sprintf("}"))
-	last.lines = append(last.lines, fmt.Sprintf("}"))
-	last.lines = append(last.lines, fmt.Sprintf("}"))
+	last.lines = append(last.lines, "return t, nil")
+	last.lines = append(last.lines, "}")
+	last.lines = append(last.lines, "}")
+	last.lines = append(last.lines, "}")
 }
 
 func sortMapKeys(keys []reflect.Value) []reflect.Value {
@@ -258,7 +255,7 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 	case map[string]any:
 		last.lines[len(last.lines)-1] += "map[string]any{"
 		keys := make([]string, 0, len(o))
-		for k, _ := range o {
+		for k := range o {
 			pc2 := pc.new(pathElement{name: k}, "", o[k], reflect.Map)
 			if onlyMeta && !unstructuredMetaKeep(pc2, k) {
 				continue
@@ -273,14 +270,14 @@ func processUnstructured(pc processingContext, onlyMeta bool) {
 				processUnstructured(pc2, onlyMeta)
 			}
 		}
-		last.lines = append(last.lines, fmt.Sprintf("},"))
+		last.lines = append(last.lines, "},")
 	case []any:
 		last.lines[len(last.lines)-1] += "[]any{\n"
 		for _, e := range o {
 			pc2 := pc.new(pathElement{}, "", e, reflect.Slice)
 			processUnstructured(pc2, onlyMeta)
 		}
-		last.lines = append(last.lines, fmt.Sprintf("},"))
+		last.lines = append(last.lines, "},")
 	case string:
 		last.lines[len(last.lines)-1] += fmt.Sprintf("%q,", pc.o)
 	default:
@@ -358,7 +355,6 @@ func processKubernetes(pc processingContext) {
 		last.lines = append(last.lines, fmt.Sprintf("%v: map[%v%v]%v%v{", pc.name, keyNi, keyElem.Name(), valNi, valElem.Name()))
 		keys := sortMapKeys(ve.MapKeys())
 		for _, keyTyped := range keys {
-			last := &(*pc.rawVars)[len((*pc.rawVars))-1]
 			// convert back the sorted key to the underlying type
 			key := keyTyped.Convert(keyElem)
 			val := ve.MapIndex(key)
@@ -401,8 +397,6 @@ func processKubernetes(pc processingContext) {
 		}
 		last.lines = append(last.lines, fmt.Sprintf("%v%v%v,", ltype, ptrDeref, varName))
 	}
-
-	return
 }
 
 func helperLine(pc processingContext, typeName string, kind reflect.Kind, ifc any) (string, string) {

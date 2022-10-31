@@ -1,6 +1,8 @@
 Reverse Kube Resources
 ===
 
+![test](https://github.com/wozniakjan/reverse-kube-resource/actions/workflows/test.yaml/badge.svg)
+
 This tool is intended to generate golang code tightly coupled with [Kubernetes client-go](https://github.com/kubernetes/client-go).
 
 The input are raw yaml manifests and the tool leverages Kubernetes scheme to generate valid golang structures compatible with client-go.

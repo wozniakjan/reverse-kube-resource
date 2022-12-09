@@ -22,7 +22,7 @@ function merge() {
     if [[ "${prMap[$mod]+x}" ]]; then
         echo merging $mod
         pr=$(echo ${prMap[$mod]} | jq '.number')
-        while ! gh pr view 50 --json 'mergeable' | grep -e 'MERGEABLE' -e 'UNKNOWN'; do
+        while ! gh pr view $pr --json 'mergeable' | grep -e 'MERGEABLE' -e 'UNKNOWN'; do
             sleep 5
         done
         gh pr review "${pr}" --approve

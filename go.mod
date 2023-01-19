@@ -7,7 +7,7 @@ require (
 	golang.org/x/tools v0.5.0
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
-	k8s.io/client-go v0.26.0
+	k8s.io/client-go v0.26.1
 )
 
 require (

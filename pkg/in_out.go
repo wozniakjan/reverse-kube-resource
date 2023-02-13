@@ -11,7 +11,6 @@ import (
 	"go/token"
 	"go/types"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -91,7 +90,7 @@ func printLines(rawVars []RawVar, buf *bytes.Buffer, kubermatic bool) {
 func Print(pkg, boilerplate string, imports []Import, vars []RawVar, kubermatic bool) {
 	var buf bytes.Buffer
 	if boilerplate != "" {
-		bytes, err := ioutil.ReadFile(boilerplate)
+		bytes, err := os.ReadFile(boilerplate)
 		checkFatal(err)
 		n := time.Now()
 		y, _, _ := n.Date()

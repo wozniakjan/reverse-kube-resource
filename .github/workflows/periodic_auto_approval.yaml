@@ -1,0 +1,17 @@
+name: Periodic PR Auto Approval
+on:
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  dependabot-hepler:
+    name: Dependabot Helper
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: run dependabot auto-merge script
+        env:
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
+        run: ./hack/dependabot_helper.bash

@@ -29,6 +29,7 @@ function merge() {
         while ! gh pr merge "$pr" --auto --merge; do
             sleep 10
         done
+        gh pr merge "${pr}" --admin --rebase
         unset prMap[$mod]
     fi
     

@@ -6,7 +6,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	golang.org/x/tools v0.8.0
 	k8s.io/api v0.27.0
-	k8s.io/apimachinery v0.27.0
+	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v0.27.0
 )
 

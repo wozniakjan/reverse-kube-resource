@@ -5,9 +5,9 @@ go 1.19
 require (
 	github.com/iancoleman/strcase v0.3.0
 	golang.org/x/tools v0.12.0
-	k8s.io/api v0.28.0
+	k8s.io/api v0.28.1
 	k8s.io/apimachinery v0.28.1
-	k8s.io/client-go v0.28.0
+	k8s.io/client-go v0.28.1
 )
 
 require (

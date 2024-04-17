@@ -9,7 +9,7 @@ require (
 	golang.org/x/tools v0.20.0
 	k8s.io/api v0.29.4
 	k8s.io/apimachinery v0.29.4
-	k8s.io/client-go v0.29.3
+	k8s.io/client-go v0.29.4
 )
 
 require (

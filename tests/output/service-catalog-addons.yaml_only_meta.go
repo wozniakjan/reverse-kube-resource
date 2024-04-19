@@ -6,7 +6,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -31,16 +30,20 @@ var (
 		},
 	}
 
-	// PodSecurityPolicy "service-catalog-addons-service-catalog-ui"
-	serviceCatalogAddonsServiceCatalogUiPodSecurityPolicy = policyv1beta1.PodSecurityPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "service-catalog-addons-service-catalog-ui",
-			Labels: map[string]string{
-				"app":                       "service-catalog-ui",
-				"chart":                     "service-catalog-ui-0.1.0",
-				"heritage":                  "Helm",
-				"kyma-project.io/component": "frontend",
-				"release":                   "service-catalog-addons",
+	// Unstructured "service-catalog-addons-service-catalog-ui"
+	serviceCatalogAddonsServiceCatalogUiUnstructuredPodSecurityPolicy = v1unstructured.Unstructured{
+		Object: map[string]any{
+			"apiVersion": "policy/v1beta1",
+			"kind":       "PodSecurityPolicy",
+			"metadata": map[string]any{
+				"labels": map[string]any{
+					"app":                       "service-catalog-ui",
+					"chart":                     "service-catalog-ui-0.1.0",
+					"heritage":                  "Helm",
+					"kyma-project.io/component": "frontend",
+					"release":                   "service-catalog-addons",
+				},
+				"name": "service-catalog-addons-service-catalog-ui",
 			},
 		},
 	}

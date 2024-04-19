@@ -170,7 +170,7 @@ var (
 	}
 
 	// CSIDriver "cinder.csi.openstack.org"
-	cinderCsiOpenstackOrgCSIDriver = storagev1.CSIDriver{
+	cinderCsiOpenstackOrgCsidriver = storagev1.CSIDriver{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cinder.csi.openstack.org",
 		},

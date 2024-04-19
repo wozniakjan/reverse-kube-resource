@@ -1057,16 +1057,16 @@ var (
 	}
 
 	// CSIDriver "cinder.csi.openstack.org"
-	cinderCsiOpenstackOrgCSIDriverAttachRequiredTrue bool = true
-	cinderCsiOpenstackOrgCSIDriverPodInfoOnMountTrue bool = true
+	cinderCsiOpenstackOrgCsidriverAttachRequiredTrue bool = true
+	cinderCsiOpenstackOrgCsidriverPodInfoOnMountTrue bool = true
 
-	cinderCsiOpenstackOrgCSIDriver = storagev1.CSIDriver{
+	cinderCsiOpenstackOrgCsidriver = storagev1.CSIDriver{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cinder.csi.openstack.org",
 		},
 		Spec: storagev1.CSIDriverSpec{
-			AttachRequired: &cinderCsiOpenstackOrgCSIDriverAttachRequiredTrue,
-			PodInfoOnMount: &cinderCsiOpenstackOrgCSIDriverPodInfoOnMountTrue,
+			AttachRequired: &cinderCsiOpenstackOrgCsidriverAttachRequiredTrue,
+			PodInfoOnMount: &cinderCsiOpenstackOrgCsidriverPodInfoOnMountTrue,
 			VolumeLifecycleModes: []storagev1.VolumeLifecycleMode{
 				"Persistent",
 				"Ephemeral",

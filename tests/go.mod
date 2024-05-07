@@ -6,7 +6,7 @@ module github.com/kubermatic/reverse-kube-resource/tests
 go 1.17
 
 require (
-	k8s.io/api v0.23.3
+	k8s.io/api v0.30.0
 	k8s.io/apimachinery v0.30.0
 )
 

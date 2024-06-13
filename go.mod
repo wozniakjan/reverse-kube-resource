@@ -7,9 +7,9 @@ toolchain go1.22.2
 require (
 	github.com/iancoleman/strcase v0.3.0
 	golang.org/x/tools v0.22.0
-	k8s.io/api v0.30.1
-	k8s.io/apimachinery v0.30.1
-	k8s.io/client-go v0.30.1
+	k8s.io/api v0.30.2
+	k8s.io/apimachinery v0.30.2
+	k8s.io/client-go v0.30.2
 )
 
 require (

@@ -1,14 +1,15 @@
 module github.com/wozniakjan/reverse-kube-resource
 
-go 1.22.0
+go 1.23.0
+
 toolchain go1.23.4
 
 require (
 	github.com/iancoleman/strcase v0.3.0
 	golang.org/x/tools v0.28.0
-	k8s.io/api v0.31.4
+	k8s.io/api v0.32.0
 	k8s.io/apimachinery v0.32.0
-	k8s.io/client-go v0.31.4
+	k8s.io/client-go v0.32.0
 )
 
 require (
@@ -17,7 +18,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect

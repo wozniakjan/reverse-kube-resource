@@ -3,8 +3,9 @@ module github.com/kubermatic/reverse-kube-resource/tests
 // tests and outputs are independent go module to not interfere with
 // the application dependencies
 
-go 1.23.0
-toolchain go1.24.1
+go 1.24.0
+
+toolchain go1.24.2
 
 require (
 	k8s.io/api v0.33.0

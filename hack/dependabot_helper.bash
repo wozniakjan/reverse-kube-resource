@@ -38,7 +38,7 @@ while read -r pr; do
     fi
 
     # Extract directory from title ("in /tests" etc.), default to root
-    dir=$(echo "$title" | sed -n 's/.* in \(\/[^ ]*\)$/\1/p')
+    dir=$(echo "$title" | sed -n 's/.* in \(\/[^ ]*\) from .*/\1/p')
     dir="${dir:-/}"
 
     key="${dir}:${mod}"

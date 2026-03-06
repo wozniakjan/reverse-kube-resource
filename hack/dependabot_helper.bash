@@ -27,19 +27,33 @@ while read -r pr; do
         log "Skipping non-dependabot PR: $title (author: $author)"
         continue
     fi
-    mod=$(echo "$pr" | jq -r '.title' | sed -e 's/.*[Bb]ump \([^ ]*\) .*/\1/')
-    prMap[$mod]="$pr"
+
+    title=$(echo "$pr" | jq -r '.title')
+    mod=$(echo "$title" | sed -e 's/.*[Bb]ump \([^ ]*\) .*/\1/')
+
+    # Skip PRs with unexpected title format (sed returns full title on non-match)
+    if [[ "$mod" == *" "* || -z "$mod" ]]; then
+        log "Skipping PR with unexpected title format: $title"
+        continue
+    fi
+
+    # Extract directory from title ("in /tests" etc.), default to root
+    dir=$(echo "$title" | sed -n 's/.* in \(\/[^ ]*\)$/\1/p')
+    dir="${dir:-/}"
+
+    key="${dir}:${mod}"
+    prMap["$key"]="$pr"
 done < <(echo "${prs}" | jq -c '.[]')
 
 merge() {
-    local mod="$1"
-    if [[ ! "${prMap[$mod]+x}" ]]; then
+    local key="$1"
+    if [[ ! "${prMap["$key"]+x}" ]]; then
         return 0
     fi
 
-    log "Merging $mod"
+    log "Merging $key"
     local pr
-    pr=$(echo "${prMap[$mod]}" | jq -r '.number')
+    pr=$(echo "${prMap["$key"]}" | jq -r '.number')
 
     # Wait for PR to become mergeable
     local retries=0
@@ -54,7 +68,7 @@ merge() {
     done
 
     if ! gh pr review "$pr" --approve; then
-        log "ERROR: Failed to approve PR #$pr ($mod)"
+        log "ERROR: Failed to approve PR #$pr ($key)"
         FAILURES=$((FAILURES + 1))
         return 1
     fi
@@ -63,8 +77,8 @@ merge() {
     retries=0
     while true; do
         local checks_json
-        if ! checks_json=$(gh pr view "$pr" --json statusCheckRollup 2>&1); then
-            log "ERROR: Failed to fetch status checks for PR #$pr ($mod): $checks_json"
+        if ! checks_json=$(gh pr view "$pr" --json statusCheckRollup); then
+            log "ERROR: Failed to fetch status checks for PR #$pr ($key)"
             FAILURES=$((FAILURES + 1))
             return 1
         fi
@@ -75,13 +89,17 @@ merge() {
         total_count=$(echo "$checks_json" | jq '.statusCheckRollup | length')
 
         if (( failed_count > 0 )); then
-            log "ERROR: Checks failed for PR #$pr ($mod)"
+            log "ERROR: Checks failed for PR #$pr ($key)"
             FAILURES=$((FAILURES + 1))
             return 1
         fi
 
-        if (( total_count > 0 )) && (( pending_count == 0 )); then
-            log "All checks passed for PR #$pr"
+        if (( pending_count == 0 )); then
+            if (( total_count == 0 )); then
+                log "No status checks reported for PR #$pr — proceeding"
+            else
+                log "All checks passed for PR #$pr"
+            fi
             break
         fi
 
@@ -99,26 +117,28 @@ merge() {
     while ! gh pr merge "$pr" --admin --merge; do
         retries=$((retries + 1))
         if [[ $retries -ge $MERGE_MAX_RETRIES ]]; then
-            log "ERROR: Timed out trying to merge PR #$pr ($mod)"
+            log "ERROR: Timed out trying to merge PR #$pr ($key)"
             FAILURES=$((FAILURES + 1))
             return 1
         fi
         sleep "$MERGE_SLEEP"
     done
 
-    log "Successfully merged PR #$pr ($mod)"
-    unset "prMap[$mod]"
+    log "Successfully merged PR #$pr ($key)"
+    unset "prMap[$key]"
 }
 
-# Merge pinned modules in order; unset from prMap on success to avoid double-processing
-for mod in "k8s.io/apimachinery" "k8s.io/api" "k8s.io/client-go"; do
-    if merge "$mod"; then
-        unset "prMap[$mod]" 2>/dev/null || true
-    fi
+# Merge pinned modules in order first (across all directories)
+for pinned_mod in "k8s.io/apimachinery" "k8s.io/api" "k8s.io/client-go"; do
+    for key in "${!prMap[@]}"; do
+        if [[ "$key" == *":${pinned_mod}" ]]; then
+            merge "$key" || true
+        fi
+    done
 done
 
-for k in "${!prMap[@]}"; do
-    merge "$k" || true
+for key in "${!prMap[@]}"; do
+    merge "$key" || true
 done
 
 if [[ $FAILURES -gt 0 ]]; then

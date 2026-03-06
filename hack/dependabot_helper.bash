@@ -34,7 +34,7 @@ merge() {
     for ((i = 0; i < 60; i++)); do # wait for checks (5min)
         j=$(gh pr view "$pr" --json statusCheckRollup) || { err "checks query failed for PR #$pr"; return 1; }
         fail=$(echo "$j" | jq '[.statusCheckRollup[]? | select(.state? == "FAILURE" or .state? == "ERROR" or .conclusion? == "FAILURE" or .conclusion? == "CANCELLED" or .conclusion? == "TIMED_OUT" or .conclusion? == "ACTION_REQUIRED")] | length')
-        pend=$(echo "$j" | jq '[.statusCheckRollup[]? | select(.state? == "PENDING" or .state? == "IN_PROGRESS" or .state? == "QUEUED" or (.status? != null and .status? != "COMPLETED"))] | length')
+        pend=$(echo "$j" | jq '[.statusCheckRollup[]? | select(.state? == "EXPECTED" or .state? == "PENDING" or .state? == "IN_PROGRESS" or .state? == "QUEUED" or (.status? != null and .status? != "COMPLETED"))] | length')
         ((fail > 0)) && { err "checks failed for PR #$pr"; return 1; }
         ((pend == 0)) && break; sleep 5
     done

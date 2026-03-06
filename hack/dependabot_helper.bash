@@ -14,7 +14,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-# list open PRs (fetch all, not just default 30)
+# list open PRs (fetch up to 999, instead of default 30)
 prs=$(gh pr list --limit 999 --json number,author,title)
 
 declare -A prMap
@@ -57,10 +57,23 @@ merge() {
 
     # Wait for PR to become mergeable
     local retries=0
-    while ! gh pr view "$pr" --json 'mergeable' | grep -q 'MERGEABLE'; do
+    while true; do
+        local mergeable_json
+        if ! mergeable_json=$(gh pr view "$pr" --json 'mergeable'); then
+            log "ERROR: Failed to query mergeability for PR #$pr ($key)"
+            FAILURES=$((FAILURES + 1))
+            return 1
+        fi
+
+        local state
+        state=$(echo "$mergeable_json" | jq -r '.mergeable')
+        if [[ "$state" == "MERGEABLE" ]]; then
+            break
+        fi
+
         retries=$((retries + 1))
         if [[ $retries -ge $MERGEABILITY_MAX_RETRIES ]]; then
-            log "ERROR: Timed out waiting for PR #$pr to become mergeable"
+            log "ERROR: Timed out waiting for PR #$pr to become mergeable (state: $state)"
             FAILURES=$((FAILURES + 1))
             return 1
         fi
